@@ -1,0 +1,28 @@
+server:
+  port: 0 # Random Port : 0
+
+spring:
+  application:
+    name: analysis-server
+  h2:
+    console:
+      enabled: true
+      settings:
+        web-allow-others: true
+      path: /h2-console
+  datasource:
+    dirver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb
+    # username : sa
+    # password : 1234
+
+eureka:
+  instance:
+    hostname: localhost
+    instance-id : ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
+
+  client:
+    registerWithEureka: true #gateway는 eureka에 등록할필요 없다. gateway는
+    fetchRegistry: true #gateway는 eureka가 찾을 필요 없다
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/ # 서버가 가진 위치값
