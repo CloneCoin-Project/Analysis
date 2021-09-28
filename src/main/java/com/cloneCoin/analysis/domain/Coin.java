@@ -1,12 +1,16 @@
 package com.cloneCoin.analysis.domain;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Data
+@Builder
+@Getter
+@Setter
 @Entity
 @Table(name = "coins")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Coin {
 
     @Id
@@ -15,8 +19,8 @@ public class Coin {
     private Long id;
 
     private String coinName;
-    private Long amount;
-    private int avgPrice;
+    private Double coinQuantity;
+    private Double avgPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id")
