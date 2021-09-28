@@ -187,7 +187,6 @@ public class Api_Client {
 	public static String asHex(byte[] bytes){
 		return new String(Base64.encodeBase64(bytes));
 	}
-
 	@SuppressWarnings("unchecked")
 	public String callApi(String endpoint, HashMap<String, String> params) {
 		String rgResultDecode = "";

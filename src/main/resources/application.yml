@@ -1,5 +1,5 @@
 server:
-  port: 8081 # Random Port : 0
+  port: 0 # Random Port : 0
 
 spring:
   application:
@@ -21,6 +21,9 @@ spring:
       hibernate:
         format_sql: true
 
+
+cryptutil:
+  key: "1234567890123456"
 
 eureka:
   instance:

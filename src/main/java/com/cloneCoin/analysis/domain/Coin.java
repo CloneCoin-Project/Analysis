@@ -10,7 +10,7 @@ import javax.persistence.*;
 public class Coin {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coin_id")
     private Long id;
 
