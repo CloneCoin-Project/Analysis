@@ -20,7 +20,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          r2dbc: DEBUG
 
 cryptutil:
   key: "1234567890123456"
