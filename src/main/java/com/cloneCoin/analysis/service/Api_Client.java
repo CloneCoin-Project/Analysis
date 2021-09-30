@@ -27,24 +27,7 @@ public class Api_Client {
 		this.api_secret = api_secret;
 	}
 
-	/**
-	 * ������ �ð��� ns�� �����Ѵ�.(1/1,000,000,000 ��)
-	 *
-	 * @return int
-	 */
 	private String usecTime() {
-    	/*
-		long start = System.nanoTime();
-		// do stuff
-		long nanoseconds = System.nanoTime();
-		long microseconds = TimeUnit.NANOSECONDS.toMicros(nanoseconds);
-		long seconds = TimeUnit.NANOSECONDS.toSeconds(nanoseconds);
-
-		int elapsedTime = (int) (microseconds + seconds);
-
-		System.out.println("elapsedTime ==> " + microseconds + " : " + seconds);
-		*/
-
 		return String.valueOf(System.currentTimeMillis());
 	}
 

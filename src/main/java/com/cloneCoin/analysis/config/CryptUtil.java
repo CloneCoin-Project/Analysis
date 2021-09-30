@@ -9,15 +9,14 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class CryptUtil {
 
-    /** Aes 인스턴스 */
+    // Aes 인스턴스
     public static Aes aes = new Aes();
-    /** Digest 인스턴스 */
+    // Digest 인스턴스
     public static Digest digest = new Digest();
-    /** Aes 인스턴스를 반환한다. */
+
     public static Aes getAES() {
         return aes;
     }//:
-    /** Digest 인스턴스를 반환한다.*/
     public static Digest getDigest() {
         return digest;
     }

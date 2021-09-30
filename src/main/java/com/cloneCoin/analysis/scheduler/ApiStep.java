@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Component
 public class ApiStep {
+
     @Value("${cryptutil.key}")
     private String key;
 

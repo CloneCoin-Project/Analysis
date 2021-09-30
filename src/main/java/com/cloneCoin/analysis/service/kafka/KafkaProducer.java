@@ -1,5 +1,6 @@
 package com.cloneCoin.analysis.service.kafka;
 
+import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.DrawlDto;
 import com.cloneCoin.analysis.dto.LeaderDto;
 import com.cloneCoin.analysis.dto.TransactionsDTO;
@@ -16,12 +17,13 @@ public class KafkaProducer {
     private static final String DepositWithdrawal = "Deposit-Withdrawal";
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendTest() {
+    public LeaderDto sendTest() {
         LeaderDto leader = new LeaderDto();
         leader.setLeaderId(1L);
         leader.setApiKey("25df4195dd072124e06545629a515d56");
         leader.setSecretKey("058f77c9fb075ee1b2077e825e77291c");
         kafkaTemplate.send(TOPIC, leader);
+        return leader;
     }
 
     public void sendBuySell(TransactionsDTO transactionsDTO) {

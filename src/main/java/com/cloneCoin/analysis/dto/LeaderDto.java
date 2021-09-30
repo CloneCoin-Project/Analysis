@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class LeaderDto {
+
+    // Leader의 UserId, apiKey, 암호화된 secretKey
     private Long leaderId;
     private String apiKey;
     private String secretKey;

@@ -29,9 +29,7 @@ public class LeaderListener {
 
     @KafkaListener(topics = "user-kafka", groupId = "foo")
     public void ListenLeader(LeaderDto leader) throws Exception {
-        String secretKey = leader.getSecretKey();
-        CryptUtil.Aes aes = CryptUtil.getAES();
-        String encryptedSecretKey = aes.encrypt(key, secretKey);
+        String encryptedSecretKey = encrypt(leader.getSecretKey());
 
         Leader newLeader = Leader.builder()
                 .userId(leader.getLeaderId())
@@ -48,8 +46,7 @@ public class LeaderListener {
     }
 
     public boolean balanceAPI(Leader leader) throws Exception {
-        CryptUtil.Aes aes = CryptUtil.getAES();
-        String decryptedSecretKey = aes.decrypt(key, leader.getSecretKey());
+        String decryptedSecretKey = decrypt(leader.getSecretKey());
 
         Api_Client api = new Api_Client(leader.getApiKey(), decryptedSecretKey);
 
@@ -110,5 +107,18 @@ public class LeaderListener {
             coins.put(key, Double.parseDouble(coinInfo.get("closing_price").toString()));
         }
         return coins;
+    }
+
+    private String encrypt(String leaderSecret) throws Exception {
+        String secretKey = leaderSecret;
+        CryptUtil.Aes aes = CryptUtil.getAES();
+        String encryptedSecretKey = aes.encrypt(key, secretKey);
+        return encryptedSecretKey;
+    }
+
+    private String decrypt(String cryptKey) throws Exception {
+        CryptUtil.Aes aes = CryptUtil.getAES();
+        String decryptedSecretKey = aes.decrypt(key, cryptKey);
+        return decryptedSecretKey;
     }
 }

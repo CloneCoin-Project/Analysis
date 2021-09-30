@@ -6,7 +6,6 @@ import com.cloneCoin.analysis.dto.*;
 import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +17,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ApiScheduler {
 
-    @Value("${cryptutil.key}")
-    private String key;
-
     private final LeaderRepository leaderRepository;
-    private final ApiStep apiStep;
     private final KafkaProducer kafkaProducer;
+    private final ApiStep apiStep;
     private final TransStep transStep;
 
     @Scheduled(fixedDelay = 30000)

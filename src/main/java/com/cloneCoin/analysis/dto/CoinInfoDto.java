@@ -10,6 +10,8 @@ import lombok.Setter;
 @Getter
 @Builder
 public class CoinInfoDto {
+
+    // 코인 이름, 수량, 평단가
     private String coinName;
     private Double coinQuantity;
     private Double avgPrice;
