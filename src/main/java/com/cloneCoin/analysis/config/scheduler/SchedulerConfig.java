@@ -20,6 +20,6 @@ public class SchedulerConfig implements SchedulingConfigurer {
         threadPoolTaskScheduler.initialize();
 
         scheduledTaskRegistrar.setTaskScheduler(threadPoolTaskScheduler);
-//        log.info("Current Thread : {}", Thread.currentThread().getName());
+        log.info("Current Thread : {}", Thread.currentThread().getName());
     }
 }

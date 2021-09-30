@@ -5,7 +5,6 @@ import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;
 import com.cloneCoin.analysis.repository.LeaderRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -125,7 +124,7 @@ public class BithumbAPIService {
         return api;
     }
 
-    private Map<String, Double> getCoinPrice() throws ParseException, JsonProcessingException {
+    private Map<String, Double> getCoinPrice() throws ParseException {
         String URL = "https://api.bithumb.com/public/ticker/ALL";
         RestTemplate restTemplate = new RestTemplate();
         String forEntity = restTemplate.getForObject(URL, String.class);

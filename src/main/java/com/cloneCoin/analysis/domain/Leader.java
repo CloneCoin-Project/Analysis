@@ -1,5 +1,6 @@
 package com.cloneCoin.analysis.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -32,7 +33,8 @@ public class Leader {
 
     private String secretKey;
 
-    @OneToMany(mappedBy = "leader", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "leader", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Coin> coinList = new ArrayList<>();
 
 }

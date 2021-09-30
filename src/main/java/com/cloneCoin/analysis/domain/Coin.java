@@ -1,14 +1,15 @@
 package com.cloneCoin.analysis.domain;
 
+import com.cloneCoin.analysis.dto.CoinInfoDto;
 import lombok.*;
 
 import javax.persistence.*;
 
-@Builder
 @Getter
 @Setter
 @Entity
 @Table(name = "coins")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Coin {
@@ -25,4 +26,12 @@ public class Coin {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id")
     private Leader leader;
+
+    public CoinInfoDto toCoinDto() {
+        return CoinInfoDto.builder()
+                .coinName(this.coinName)
+                .coinQuantity(this.getCoinQuantity())
+                .avgPrice(this.getAvgPrice())
+                .build();
+    }
 }

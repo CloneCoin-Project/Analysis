@@ -8,6 +8,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
+@Builder
 public class CoinInfoDto {
     private String coinName;
     private Double coinQuantity;
@@ -16,6 +17,12 @@ public class CoinInfoDto {
     public CoinInfoDto(String coinName, Double amount) {
         this.coinName = coinName;
         this.coinQuantity = amount;
+    }
+
+    public CoinInfoDto(String coinName, Double coinQuantity, Double avgPrice) {
+        this.coinName = coinName;
+        this.coinQuantity = coinQuantity;
+        this.avgPrice = avgPrice;
     }
 
     public Coin toCoin(){

@@ -1,11 +1,11 @@
-package com.cloneCoin.analysis.service;
+package com.cloneCoin.analysis.service.kafka;
 
 import com.cloneCoin.analysis.config.CryptUtil;
 import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
-import com.cloneCoin.analysis.dto.CoinInfoDto;
-import com.cloneCoin.analysis.dto.LeaderDto;
+import com.cloneCoin.analysis.dto.*;
 import com.cloneCoin.analysis.repository.LeaderRepository;
+import com.cloneCoin.analysis.service.Api_Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.*;
 
 @Slf4j
@@ -26,19 +25,18 @@ public class LeaderListener {
 
     @Value("${cryptutil.key}")
     private String key;
-
     private final LeaderRepository leaderRepository;
 
     @KafkaListener(topics = "user-kafka", groupId = "foo")
     public void ListenLeader(LeaderDto leader) throws Exception {
-        String strToEncrypt = leader.getSecretKey();
+        String secretKey = leader.getSecretKey();
         CryptUtil.Aes aes = CryptUtil.getAES();
-        String encryptedSecretKey = aes.encrypt(key, strToEncrypt);
+        String encryptedSecretKey = aes.encrypt(key, secretKey);
 
         Leader newLeader = Leader.builder()
                 .userId(leader.getLeaderId())
                 .totalKRW(0.0)
-                .lastTransTime(0L)
+                .lastTransTime(System.currentTimeMillis())
                 .apiKey(leader.getApiKey())
                 .secretKey(encryptedSecretKey)
                 .build();
@@ -70,21 +68,22 @@ public class LeaderListener {
             data.entrySet().stream()
                     .filter(pair -> pair.getKey().contains("total_"))
                     .filter(pair -> Float.parseFloat(pair.getValue()) > 0.0)
-                    .filter(pair -> !pair.getKey().equals("total_krw"))
                     .forEach(pair -> coins.add(new CoinInfoDto(pair.getKey().substring(6).toUpperCase(Locale.ROOT), Double.parseDouble(pair.getValue()))));
             Map<String, Double> coinPrice = getCoinPrice();
             List<Coin> coinList = new ArrayList<>();
+
             for (CoinInfoDto coinInfo: coins) {
-                Double price = coinPrice.get(coinInfo.getCoinName());
-                coinInfo.setAvgPrice(price);
-                Coin coin = coinInfo.toCoin();
-                coin.setLeader(leader);
-                coinList.add(coin);
+                if(coinInfo.getCoinName().equals("KRW")) {
+                    leader.setTotalKRW(coinInfo.getCoinQuantity());
+                } else{
+                    coinInfo.setAvgPrice(coinPrice.get(coinInfo.getCoinName()));
+                    Coin coin = coinInfo.toCoin();
+                    coin.setLeader(leader);
+                    coinList.add(coin);
+                }
             }
+
             leader.setCoinList(coinList);
-            for (Coin coin:leader.getCoinList()) {
-                System.out.println("COINNAME : " + coin.getCoinName() + ", " + "COINQUANTITY : " + coin.getCoinQuantity() + ", " + "AVGPRICE : " + coin.getAvgPrice());
-            }
             leaderRepository.save(leader);
             return true;
         }
@@ -112,5 +111,4 @@ public class LeaderListener {
         }
         return coins;
     }
-
 }
