@@ -4,6 +4,7 @@ import com.cloneCoin.analysis.config.CryptUtil;
 import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;
+import com.cloneCoin.analysis.repository.LeaderR2Repository;
 import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.Api_Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +26,7 @@ public class LeaderListener {
 
     @Value("${cryptutil.key}")
     private String key;
-    private final LeaderRepository leaderRepository;
+    private final LeaderR2Repository leaderRepository;
 
     @KafkaListener(topics = "user-kafka", groupId = "foo")
     public void ListenLeader(LeaderDto leader) throws Exception {

@@ -2,6 +2,7 @@ package com.cloneCoin.analysis.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import org.springframework.data.annotation.Id;
 
 import javax.persistence.*;
 import java.time.LocalDate;

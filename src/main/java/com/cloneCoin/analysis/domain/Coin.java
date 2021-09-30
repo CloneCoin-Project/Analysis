@@ -2,6 +2,7 @@ package com.cloneCoin.analysis.domain;
 
 import com.cloneCoin.analysis.dto.CoinInfoDto;
 import lombok.*;
+import org.springframework.data.annotation.Id;
 
 import javax.persistence.*;
 
@@ -14,6 +15,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 public class Coin {
 
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coin_id")
