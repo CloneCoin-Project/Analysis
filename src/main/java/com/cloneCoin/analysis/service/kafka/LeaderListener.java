@@ -1,9 +1,10 @@
 package com.cloneCoin.analysis.service.kafka;
 
-import com.cloneCoin.analysis.config.CryptUtil;
+import com.cloneCoin.analysis.config.aes.CryptUtil;
 import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;
+import com.cloneCoin.analysis.exception.InvalidKeysException;
 import com.cloneCoin.analysis.exception.LeaderAlreadyExistsException;
 import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.Api_Client;
@@ -45,8 +46,6 @@ public class LeaderListener {
                 .build();
         if(balanceAPI(newLeader)){
             log.info("Leader Created : " + leader);
-        } else {
-            log.info("User Info was Wrong!! (Api Or Secret");
         }
     }
 
@@ -59,7 +58,7 @@ public class LeaderListener {
         rgParams.put("currency", "ALL");
         String result = api.callApi("/info/balance", rgParams);
         if(result.contains("error")){
-            return false;
+            throw new InvalidKeysException("apiKey or secretKey was wrong!");
         }
         JSONParser parser = new JSONParser();
         Object obj = parser.parse(result);

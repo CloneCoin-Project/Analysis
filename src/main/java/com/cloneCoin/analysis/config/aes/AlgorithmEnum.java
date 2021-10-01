@@ -1,4 +1,4 @@
-package com.cloneCoin.analysis.config;
+package com.cloneCoin.analysis.config.aes;
 
 public enum AlgorithmEnum {
 

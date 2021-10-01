@@ -1,10 +1,11 @@
 package com.cloneCoin.analysis.scheduler;
 
-import com.cloneCoin.analysis.config.CryptUtil;
+import com.cloneCoin.analysis.config.aes.CryptUtil;
 import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.CoinInfoDto;
 import com.cloneCoin.analysis.dto.TransactionDto;
+import com.cloneCoin.analysis.exception.InvalidKeysException;
 import com.cloneCoin.analysis.service.Api_Client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +32,9 @@ public class ApiStep {
         rgParams.put("currency", "ALL");
 
         String result = api.callApi("/info/balance", rgParams);
+        if(result.contains("error")){
+            throw new InvalidKeysException("apiKey or secretKey was wrong!");
+        }
         JSONParser parser = new JSONParser();
         Object obj = parser.parse(result);
         JSONObject jsonObj = (JSONObject) obj;
@@ -60,6 +64,9 @@ public class ApiStep {
         rgParams.put("payment_currency", "KRW");
 
         String result = api.callApi("/info/user_transactions", rgParams);
+        if(result.contains("error")){
+            throw new InvalidKeysException("apiKey or secretKey was wrong!!");
+        }
         JSONParser parser = new JSONParser();
         Object obj = parser.parse(result);
         JSONObject jsonObj = (JSONObject) obj;
