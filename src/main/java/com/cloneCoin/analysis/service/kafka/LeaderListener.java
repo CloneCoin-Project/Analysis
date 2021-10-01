@@ -1,6 +1,6 @@
 package com.cloneCoin.analysis.service.kafka;
 
-import com.cloneCoin.analysis.config.CryptUtil;
+import com.cloneCoin.analysis.config.aes.CryptUtil;
 import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;

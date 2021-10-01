@@ -95,14 +95,11 @@ public class TransStep {
 
     private CoinInfoDto saveBS(MaxCoinTranDto maxCoinTranDto, Coin coin, Double total, CoinInfoDto beforeCoinInfo, Double beforeLeaderKRW){
         CoinInfoDto coinInfoDto = coin.toCoinDto();
-        Set<CoinInfoDto> afterCoinInfoSet = new HashSet<>();
-        Set<CoinInfoDto> beforeCoinInfoSet = new HashSet<>();
-        if(!maxCoinTranDto.getAfterCoinSet().isEmpty()){
-            afterCoinInfoSet = maxCoinTranDto.getAfterCoinSet();
-            beforeCoinInfoSet = maxCoinTranDto.getBeforeCoinSet();
-        }
+        Set<CoinInfoDto> afterCoinInfoSet = maxCoinTranDto.getAfterCoinSet();
+        Set<CoinInfoDto> beforeCoinInfoSet = maxCoinTranDto.getBeforeCoinSet();
         afterCoinInfoSet.add(coinInfoDto);
         beforeCoinInfoSet.add(beforeCoinInfo);
+
         maxCoinTranDto.setAfterCoinSet(afterCoinInfoSet);
         maxCoinTranDto.setBeforeCoinSet(beforeCoinInfoSet);
         maxCoinTranDto.setSearch("1");

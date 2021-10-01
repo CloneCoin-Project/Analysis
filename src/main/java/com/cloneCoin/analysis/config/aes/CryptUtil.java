@@ -1,4 +1,4 @@
-package com.cloneCoin.analysis.config;
+package com.cloneCoin.analysis.config.aes;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

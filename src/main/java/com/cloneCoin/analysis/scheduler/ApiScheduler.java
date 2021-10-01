@@ -85,10 +85,8 @@ public class ApiScheduler {
                         maxList[i].setBeforeCoinSet(beforeCoinSet);
                         maxList[i].setAfterCoinSet(afterCoinSet);
                     }
-                    Set<CoinInfoDto> collect = maxList[i].getBeforeCoinSet().stream().collect(Collectors.toSet());
-                    beforeTotal.setCoins(collect);
-                    Set<CoinInfoDto> collect1 = maxList[i].getAfterCoinSet().stream().collect(Collectors.toSet());
-                    afterTotal.setCoins(collect1);
+                    beforeTotal.setCoins(maxList[i].getBeforeCoinSet().stream().collect(Collectors.toSet()));
+                    afterTotal.setCoins(maxList[i].getAfterCoinSet().stream().collect(Collectors.toSet()));
                     buySell.setAfter(afterTotal);
                     buySell.setBefore(beforeTotal);
                     buySell.getBefore().setTotalKRW(maxList[i].getBeforeTotalKRW());
@@ -96,7 +94,7 @@ public class ApiScheduler {
                     buySell.setUserId(leader.getUserId());
                     kafkaProducer.sendBuySell(buySell);
 
-                } else if(maxList[i].getSearch() != null) {
+                } else if(maxList[i].getSearch() != null && (maxList[i].getSearch().equals("4") || maxList[i].getSearch().equals("5"))) {
                     drawlDto.setType(maxList[i].getSearch());
                     List<CoinInfoDto> collect = maxList[i].getAfterCoinSet().stream().collect(Collectors.toList());
                     drawlDto.setTotalKRW(collect.get(0).getAvgPrice());

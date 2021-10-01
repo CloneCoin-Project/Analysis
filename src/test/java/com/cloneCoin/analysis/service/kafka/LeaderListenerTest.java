@@ -1,14 +1,12 @@
 package com.cloneCoin.analysis.service.kafka;
 
-import com.cloneCoin.analysis.config.CryptUtil;
+import com.cloneCoin.analysis.config.aes.CryptUtil;
 import org.assertj.core.api.Assertions;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class LeaderListenerTest {
 
