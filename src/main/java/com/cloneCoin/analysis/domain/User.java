@@ -27,6 +27,8 @@ public class User {
     private String firstname;
     @Column
     private String lastname;
+    @Column
+    private Long userId;
 
     public User(String firstname, String lastname){
         this.firstname = firstname;

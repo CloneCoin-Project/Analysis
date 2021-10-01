@@ -29,10 +29,12 @@ public class Coin {
     private Double coinQuantity;
     @Column
     private Double avgPrice;
+    @Column
+    private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader_id")
-    private Leader leader;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "leader_id")
+//    private Leader leader;
 
     public CoinInfoDto toCoinDto() {
         return CoinInfoDto.builder()

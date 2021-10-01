@@ -30,7 +30,7 @@ class LeaderServiceTest {
 
     @Test
     void test(){
-        User user = new User(1L, "nick","name");
+        User user = new User(1L, "nick","name", 1L);
         userRepository.save(user).subscribe();
         Mono<User> byId = userRepository.findById(1L);
         byId.subscribe((data) -> {

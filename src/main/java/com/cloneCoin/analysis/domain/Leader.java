@@ -40,8 +40,4 @@ public class Leader {
         this.secretKey = secretKey;
     }
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "leader", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Coin> coinList = new ArrayList<>();
-
 }

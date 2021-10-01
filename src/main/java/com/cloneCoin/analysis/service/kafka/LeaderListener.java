@@ -5,9 +5,8 @@ import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;
 import com.cloneCoin.analysis.exception.InvalidKeysException;
-import com.cloneCoin.analysis.exception.LeaderAlreadyExistsException;
+import com.cloneCoin.analysis.repository.CoinR2Repository;
 import com.cloneCoin.analysis.repository.LeaderR2Repository;
-import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.Api_Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +19,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -33,6 +30,7 @@ public class LeaderListener {
     @Value("${cryptutil.key}")
     private String key;
     private final LeaderR2Repository leaderR2Repository;
+    private final CoinR2Repository coinR2Repository;
 
     @KafkaListener(topics = "user-kafka", groupId = "foo")
     public void ListenLeader(@Payload LeaderDto leader){
@@ -45,7 +43,6 @@ public class LeaderListener {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    log.info("123123");
                     Leader newLeader = Leader.builder()
                             .userId(leader.getLeaderId())
                             .totalKRW(0.0)
@@ -58,7 +55,7 @@ public class LeaderListener {
                             log.info("Leader Created : " + leader);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error(e.toString());
                     }});
 
     }
@@ -91,16 +88,16 @@ public class LeaderListener {
 
             for (CoinInfoDto coinInfo: coins) {
                 if(coinInfo.getCoinName().equals("KRW")) {
-                    leader.setTotalKRW(coinInfo.getCoinQuantity());
+                    leader.setTotalKRW( coinInfo.getCoinQuantity());
                 } else{
                     coinInfo.setAvgPrice(coinPrice.get(coinInfo.getCoinName()));
                     Coin coin = coinInfo.toCoin();
-                    coin.setLeader(leader);
+                    coin.setUserId(leader.getUserId());
                     coinList.add(coin);
                 }
             }
-//            leader.setCoinList(coinList);
             leaderR2Repository.save(leader).subscribe();
+            coinR2Repository.saveAll(coinList).subscribe();
             return true;
         }
         return false;
