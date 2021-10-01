@@ -26,4 +26,31 @@ public class DatabaseConfiguration extends AbstractR2dbcConfiguration {
     ReactiveTransactionManager transactionManager(ConnectionFactory connectionFactory){
         return new R2dbcTransactionManager(connectionFactory);
     }
+
+
+    /** Create leaders DB
+     *
+       create table leaders (
+            leader_id bigint not null auto_increment,
+            api_key varchar(255),
+    last_trans_time bigint,
+    secret_key varchar(255),
+    total_krw double precision,
+    user_id bigint,
+    primary key (leader_id)
+    ) engine=InnoDB
+
+     Create coins DB
+
+     create table coins (
+     coin_id bigint not null auto_increment,
+     avg_price double precision,
+     coin_name varchar(255),
+     coin_quantity double precision,
+     leader_id bigint,
+     primary key (coin_id),
+     foreign key(leader_id) references leaders(leader_id)
+     match simple on update no action on delete no action) engine=InnoDB;
+     */
+
 }
