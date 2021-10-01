@@ -22,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class LeaderListener {
 

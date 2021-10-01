@@ -17,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-@Service
+//@Service
 @RequiredArgsConstructor
 public class BithumbAPIService {
 
