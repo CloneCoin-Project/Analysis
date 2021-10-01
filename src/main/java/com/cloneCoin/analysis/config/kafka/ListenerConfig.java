@@ -1,6 +1,7 @@
 package com.cloneCoin.analysis.config.kafka;
 
 import com.cloneCoin.analysis.dto.LeaderDto;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,9 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.AbstractMessageListenerContainer;
+import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.listener.KafkaListenerErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
@@ -17,12 +21,17 @@ import java.util.Map;
 
 @EnableKafka
 @Configuration
+@Slf4j
 public class ListenerConfig {
 
     @Bean
     ConcurrentKafkaListenerContainerFactory<String, LeaderDto> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, LeaderDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setErrorHandler(((e, consumerRecord) ->{
+            log.error("error : "+ e);
+            log.info("Leader wasn't created!!");
+                }));
 
         return factory;
     }
@@ -38,7 +47,7 @@ public class ListenerConfig {
     public Map<String, Object> consumerConfigurations() {
         JsonDeserializer<Object> deserializer = new JsonDeserializer<>(Object.class);
         deserializer.setRemoveTypeHeaders(false);
-        deserializer.addTrustedPackages("*");
+        deserializer.addTrustedPackages("com.cloneCoin.analysis.dto.LeaderDto");
         deserializer.setUseTypeMapperForKey(true);
 
         Map<String, Object> configurations = new HashMap<>();
