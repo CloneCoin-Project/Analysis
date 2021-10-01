@@ -6,6 +6,7 @@ import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;
 import com.cloneCoin.analysis.exception.InvalidKeysException;
 import com.cloneCoin.analysis.exception.LeaderAlreadyExistsException;
+import com.cloneCoin.analysis.repository.LeaderR2Repository;
 import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.Api_Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,34 +20,47 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
+
 import java.util.*;
+import java.util.stream.Stream;
 
 @Slf4j
-//@Component
+@Component
 @RequiredArgsConstructor
 public class LeaderListener {
 
     @Value("${cryptutil.key}")
     private String key;
-    private final LeaderRepository leaderRepository;
+    private final LeaderR2Repository leaderR2Repository;
 
     @KafkaListener(topics = "user-kafka", groupId = "foo")
-    public void ListenLeader(@Payload LeaderDto leader) throws Exception {
-        if(leaderRepository.existsById(leader.getLeaderId())){
-            throw new LeaderAlreadyExistsException("Leader Already Exists!");
-        }
-        String encryptedSecretKey = encrypt(leader.getSecretKey());
+    public void ListenLeader(@Payload LeaderDto leader){
+        leaderR2Repository.existsByUserId(leader.getLeaderId())
+                .filter( i -> i == 0 )
+                .subscribe(i -> {
+                    String encryptedSecretKey = null;
+                    try {
+                        encryptedSecretKey = encrypt(leader.getSecretKey());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    log.info("123123");
+                    Leader newLeader = Leader.builder()
+                            .userId(leader.getLeaderId())
+                            .totalKRW(0.0)
+                            .lastTransTime(System.currentTimeMillis())
+                            .apiKey(leader.getApiKey())
+                            .secretKey(encryptedSecretKey)
+                            .build();
+                    try {
+                        if(balanceAPI(newLeader)){
+                            log.info("Leader Created : " + leader);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }});
 
-        Leader newLeader = Leader.builder()
-                .userId(leader.getLeaderId())
-                .totalKRW(0.0)
-                .lastTransTime(System.currentTimeMillis())
-                .apiKey(leader.getApiKey())
-                .secretKey(encryptedSecretKey)
-                .build();
-        if(balanceAPI(newLeader)){
-            log.info("Leader Created : " + leader);
-        }
     }
 
     public boolean balanceAPI(Leader leader) throws Exception {
@@ -85,9 +99,8 @@ public class LeaderListener {
                     coinList.add(coin);
                 }
             }
-
-            leader.setCoinList(coinList);
-            leaderRepository.save(leader);
+//            leader.setCoinList(coinList);
+            leaderR2Repository.save(leader).subscribe();
             return true;
         }
         return false;

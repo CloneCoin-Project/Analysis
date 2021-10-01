@@ -3,14 +3,16 @@ package com.cloneCoin.analysis.domain;
 import com.cloneCoin.analysis.dto.CoinInfoDto;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import javax.persistence.*;
 
-@Getter
-@Setter
+
 @Entity
-@Table(name = "coins")
+@Table("coins")
 @Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Coin {
@@ -18,11 +20,14 @@ public class Coin {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "coin_id")
+    @Column
     private Long id;
 
+    @Column
     private String coinName;
+    @Column
     private Double coinQuantity;
+    @Column
     private Double avgPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
