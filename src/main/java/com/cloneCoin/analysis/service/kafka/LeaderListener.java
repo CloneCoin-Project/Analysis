@@ -8,6 +8,7 @@ import com.cloneCoin.analysis.exception.InvalidKeysException;
 import com.cloneCoin.analysis.repository.CoinR2Repository;
 import com.cloneCoin.analysis.repository.LeaderR2Repository;
 import com.cloneCoin.analysis.service.Api_Client;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,26 +79,37 @@ public class LeaderListener {
         String code = (String) jsonObj.get("status");
         List<CoinInfoDto> coins = new ArrayList<>();
         if(code.equals("0000")){
-            Map<String, String> data = new ObjectMapper().readValue(jsonObj.get("data").toString(), Map.class);
-            data.entrySet().stream()
-                    .filter(pair -> pair.getKey().contains("total_"))
-                    .filter(pair -> Float.parseFloat(pair.getValue()) > 0.0)
-                    .forEach(pair -> coins.add(new CoinInfoDto(pair.getKey().substring(6).toUpperCase(Locale.ROOT), Double.parseDouble(pair.getValue()))));
-            Map<String, Double> coinPrice = getCoinPrice();
-            List<Coin> coinList = new ArrayList<>();
-
-            for (CoinInfoDto coinInfo: coins) {
-                if(coinInfo.getCoinName().equals("KRW")) {
-                    leader.setTotalKRW( coinInfo.getCoinQuantity());
-                } else{
-                    coinInfo.setAvgPrice(coinPrice.get(coinInfo.getCoinName()));
-                    Coin coin = coinInfo.toCoin();
-                    coin.setLeaderId(leader.getUserId());
-                    coinList.add(coin);
+            leaderR2Repository.save(leader).subscribe(i -> {
+                Map<String, String> data = null;
+                try {
+                    data = new ObjectMapper().readValue(jsonObj.get("data").toString(), Map.class);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
                 }
-            }
-            leaderR2Repository.save(leader).subscribe();
-            coinR2Repository.saveAll(coinList).subscribe();
+                data.entrySet().stream()
+                        .filter(pair -> pair.getKey().contains("total_"))
+                        .filter(pair -> Float.parseFloat(pair.getValue()) > 0.0)
+                        .forEach(pair -> coins.add(new CoinInfoDto(pair.getKey().substring(6).toUpperCase(Locale.ROOT), Double.parseDouble(pair.getValue()))));
+                Map<String, Double> coinPrice = null;
+                try {
+                    coinPrice = getCoinPrice();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                List<Coin> coinList = new ArrayList<>();
+
+                for (CoinInfoDto coinInfo: coins) {
+                    if(coinInfo.getCoinName().equals("KRW")) {
+                        leader.setTotalKRW( coinInfo.getCoinQuantity());
+                    } else{
+                        coinInfo.setAvgPrice(coinPrice.get(coinInfo.getCoinName()));
+                        Coin coin = coinInfo.toCoin();
+                        coin.setLeaderId(leader.getUserId());
+                        coinList.add(coin);
+                    }
+                }
+                coinR2Repository.saveAll(coinList).subscribe();
+            });
             return true;
         }
         return false;

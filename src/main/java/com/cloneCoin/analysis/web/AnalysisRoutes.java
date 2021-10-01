@@ -15,7 +15,6 @@ public class AnalysisRoutes {
     public RouterFunction<ServerResponse> router(LeaderHandler leaderHandler) {
         return RouterFunctions.route()
                 .GET("/analysis/getall", request -> leaderHandler.findAllLeadersCoins())
-                .POST("/analysis/save", request -> leaderHandler.saveOne())
                 .POST("/analysis/kafka", request -> leaderHandler.kafka()) /** PRODUCER TEST */
                 .GET("/analysis/hello", req -> ServerResponse.ok().body(Flux.just("Hello", "World!"), String.class))
                 .build();
