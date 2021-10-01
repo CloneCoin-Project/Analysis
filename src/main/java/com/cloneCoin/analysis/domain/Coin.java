@@ -30,7 +30,7 @@ public class Coin {
     @Column
     private Double avgPrice;
     @Column
-    private Long userId;
+    private Long leaderId;
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "leader_id")

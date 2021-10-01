@@ -21,7 +21,7 @@ public class LeaderReadConverter implements Converter<Row, Coin> {
                 .coinName(source.getCoinName())
                 .coinQuantity(source.getCoinQuantity())
                 .avgPrice(source.getAvgPrice())
-                .userId(source.getUserId())
+                .leaderId(source.getUserId())
                 .build();
     }
 }
