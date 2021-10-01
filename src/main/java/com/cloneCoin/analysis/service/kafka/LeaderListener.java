@@ -4,6 +4,7 @@ import com.cloneCoin.analysis.config.CryptUtil;
 import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;
+import com.cloneCoin.analysis.exception.LeaderAlreadyExistsException;
 import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.Api_Client;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import java.util.*;
@@ -28,7 +30,10 @@ public class LeaderListener {
     private final LeaderRepository leaderRepository;
 
     @KafkaListener(topics = "user-kafka", groupId = "foo")
-    public void ListenLeader(LeaderDto leader) throws Exception {
+    public void ListenLeader(@Payload LeaderDto leader) throws Exception {
+        if(leaderRepository.existsById(leader.getLeaderId())){
+            throw new LeaderAlreadyExistsException("Leader Already Exists!");
+        }
         String encryptedSecretKey = encrypt(leader.getSecretKey());
 
         Leader newLeader = Leader.builder()
@@ -39,9 +44,9 @@ public class LeaderListener {
                 .secretKey(encryptedSecretKey)
                 .build();
         if(balanceAPI(newLeader)){
-            log.info(String.format("User created -> %s", newLeader));
+            log.info("Leader Created : " + leader);
         } else {
-            log.info("User Info was Wrong!!");
+            log.info("User Info was Wrong!! (Api Or Secret");
         }
     }
 
@@ -52,14 +57,16 @@ public class LeaderListener {
 
         HashMap<String, String> rgParams = new HashMap<String, String>();
         rgParams.put("currency", "ALL");
-
         String result = api.callApi("/info/balance", rgParams);
+        if(result.contains("error")){
+            return false;
+        }
         JSONParser parser = new JSONParser();
         Object obj = parser.parse(result);
         JSONObject jsonObj = (JSONObject) obj;
+        String s = (String) jsonObj.get("error");
         String code = (String) jsonObj.get("status");
         List<CoinInfoDto> coins = new ArrayList<>();
-
         if(code.equals("0000")){
             Map<String, String> data = new ObjectMapper().readValue(jsonObj.get("data").toString(), Map.class);
             data.entrySet().stream()
