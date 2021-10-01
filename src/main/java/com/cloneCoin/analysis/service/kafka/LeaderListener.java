@@ -104,7 +104,7 @@ public class LeaderListener {
                     } else{
                         coinInfo.setAvgPrice(coinPrice.get(coinInfo.getCoinName()));
                         Coin coin = coinInfo.toCoin();
-                        coin.setLeaderId(leader.getUserId());
+                        coin.setLeaderId(i.getUserId());
                         coinList.add(coin);
                     }
                 }
