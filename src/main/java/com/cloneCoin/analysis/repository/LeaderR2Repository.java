@@ -11,4 +11,7 @@ public interface LeaderR2Repository extends R2dbcRepository<Leader, Long> {
 
     @Query("select case when count(e.user_id) > 0 then true else false end from leaders e where e.user_id=:userId")
     Mono<Integer> existsByUserId(Long userId);
+
+    @Query("select * from leaders where user_id = :userId")
+    Mono<Leader> findByUserId(Long userId);
 }
