@@ -50,11 +50,9 @@ public class TransStep {
                 }
                 count++;
                 if(tran.getSearch().equals("4") && maxList[count].getAfterCoinSet().isEmpty()) {
-                    saveDe(maxList[count], leader.getTotalKRW(), tran.getPrice(), tran.getSearch());
                     leader.setTotalKRW(saveDe(maxList[count], leader.getTotalKRW(), tran.getPrice(), tran.getSearch()));
                 }
                 else if(tran.getSearch().equals("5") && maxList[count].getAfterCoinSet().isEmpty()) {
-                    saveWi(maxList[count], leader.getTotalKRW(), tran.getPrice(), tran.getSearch());
                     leader.setTotalKRW(saveWi(maxList[count], leader.getTotalKRW(), tran.getPrice(), tran.getSearch()));
                 }
                 count++;
