@@ -30,6 +30,9 @@ public class TransStep {
         for (TransactionDto tran:transactionDtos) {
             if(tran.getSearch().equals("2")){
                 coin.setCoinQuantity(coin.getCoinQuantity() - tran.getUnits());
+                if (coin.getCoinQuantity().equals(0.0)) {
+                    coin.setAvgPrice(0.0);
+                }
                 leader.setTotalKRW(leader.getTotalKRW() + (tran.getUnits() * tran.getPrice()));
                 isTrans = true;
             }

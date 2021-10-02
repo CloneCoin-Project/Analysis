@@ -28,6 +28,7 @@ public class ApiScheduler {
 
         for (Leader leader:leaders) {
             Map<String, Coin> beforeMap = leader.getCoinList().stream()
+                    .filter(coin -> coin.getCoinQuantity()>0.0)
                     .collect(Collectors.toMap(Coin::getCoinName, Function.identity()));
             Map<String, Coin> afterMap = apiStep.balanceAPI(leader).stream()
                     .collect(Collectors.toMap(Coin::getCoinName, Function.identity()));

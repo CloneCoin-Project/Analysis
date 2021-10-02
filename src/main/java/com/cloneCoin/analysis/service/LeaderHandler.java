@@ -32,6 +32,7 @@ public class LeaderHandler {
                     LeadersDto leadersDto = new LeadersDto();
                     List<Coin> coinList = leader.getCoinList();
                     List<CoinInfoDto> collect = coinList.stream()
+                            .filter(coin -> coin.getCoinQuantity()>0.0)
                             .map(coin -> coin.toCoinDto())
                             .collect(Collectors.toList());
                     leadersDto.setLeaderId(leader.getUserId());
