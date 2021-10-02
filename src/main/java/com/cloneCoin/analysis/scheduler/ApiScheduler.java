@@ -49,14 +49,24 @@ public class ApiScheduler {
                         if(beforeMap.containsKey(key) && (afterMap.get(key).getCoinQuantity().compareTo(beforeMap.get(key).getCoinQuantity()))== 0){
                             sameCoinList.add(beforeMap.get(key).toCoinDto());
                         }
-                        else if(beforeMap.containsKey(key)){
+                        else {
                             List<TransactionDto> transactionDtos = null;
                             try {
                                 transactionDtos = apiStep.transactionsAPI(leader, afterMap.get(key).getCoinName());
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos);
+                            if(beforeMap.containsKey(key)){
+                                transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos);
+                            }else{
+                                Coin coinBefore = Coin.builder()
+                                        .coinName(afterMap.get(key).getCoinName())
+                                        .coinQuantity(0.0)
+                                        .leader(leader)
+                                        .coinQuantity(0.0)
+                                        .build();
+                                transStep.transCoinInfo(maxList, coinBefore, transactionDtos);
+                            }
                         }
                     });
 
