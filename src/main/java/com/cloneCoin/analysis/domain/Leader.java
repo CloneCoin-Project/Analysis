@@ -18,7 +18,7 @@ public class Leader {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Long leader_id;
 
     @Column
     private Long userId;
