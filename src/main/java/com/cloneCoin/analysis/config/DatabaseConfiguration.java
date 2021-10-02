@@ -30,15 +30,15 @@ public class DatabaseConfiguration extends AbstractR2dbcConfiguration {
 
     /** Create leaders DB
      *
-       create table leaders (
-            leader_id bigint not null auto_increment,
-            api_key varchar(255),
-    last_trans_time bigint,
-    secret_key varchar(255),
-    total_krw double precision,
-    user_id bigint,
-    primary key (leader_id)
-    ) engine=InnoDB
+     create table leaders (
+     leader_id bigint not null auto_increment,
+     api_key varchar(255),
+     last_trans_time bigint,
+     secret_key varchar(255),
+     total_krw double precision,
+     user_id bigint UNIQUE,
+     primary key (leader_id)
+     ) engine=InnoDB;
 
      Create coins DB
 
@@ -49,7 +49,7 @@ public class DatabaseConfiguration extends AbstractR2dbcConfiguration {
      coin_quantity double precision,
      leader_id bigint,
      primary key (coin_id),
-     foreign key(leader_id) references leaders(leader_id)
+     foreign key(leader_id) references leaders(user_id)
      match simple on update no action on delete no action) engine=InnoDB;
      */
 

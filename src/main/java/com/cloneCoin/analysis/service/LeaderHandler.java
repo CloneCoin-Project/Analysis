@@ -28,7 +28,11 @@ public class LeaderHandler {
         Mono<List<Coin>> listMono = coinR2Repository.findAll().collectList();
         Mono<Stream<LeadersDto>> map = listMono.map(coins -> {
             Stream<Long> longStream = coins.stream().map(coin -> coin.getLeaderId());
-            return longStream.distinct().map(leaderId -> new LeadersDto(leaderId, coins.stream().filter(coin -> coin.getLeaderId()==leaderId).filter(coin -> coin.getCoinQuantity() > 0.0).map(coin -> coin.toCoinDto()).collect(Collectors.toList())));
+            return longStream.distinct()
+                    .map(leaderId -> new LeadersDto(leaderId, coins.stream()
+                            .filter(coin -> coin.getLeaderId()==leaderId)
+                            .filter(coin -> coin.getCoinQuantity() > 0.0)
+                            .map(coin -> coin.toCoinDto()).collect(Collectors.toList())));
         });
         return ServerResponse.ok().body(map, Stream.class);
     }
