@@ -39,6 +39,7 @@ public class TransStep {
             else if(tran.getSearch().equals("1")){
                 Double quantity = coin.getCoinQuantity() + tran.getUnits();
                 Double totalAmount = (coin.getAvgPrice() * coin.getCoinQuantity()) + (tran.getPrice() * tran.getUnits());
+                leader.setTotalKRW(leader.getTotalKRW() - (tran.getPrice() * tran.getUnits()));
                 coin.setCoinQuantity(quantity);
                 coin.setAvgPrice(totalAmount / quantity);
                 isTrans = true;
