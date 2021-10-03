@@ -6,17 +6,13 @@ import com.cloneCoin.analysis.dto.CoinInfoDto;
 import com.cloneCoin.analysis.dto.MaxCoinTranDto;
 import com.cloneCoin.analysis.dto.TransactionDto;
 import com.cloneCoin.analysis.repository.CoinR2Repository;
-import com.cloneCoin.analysis.repository.CoinRepository;
 import com.cloneCoin.analysis.repository.LeaderR2Repository;
-import com.cloneCoin.analysis.repository.LeaderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.Max;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -28,7 +24,6 @@ public class TransStep {
     private final CoinR2Repository coinR2Repository;
 
     public Mono<MaxCoinTranDto[]> transCoinInfo(MaxCoinTranDto[] maxList, Coin coin, List<TransactionDto> transactionDtos) {
-        MaxCoinTranDto[] max = new MaxCoinTranDto[maxList.length];
         Mono<MaxCoinTranDto[]> map = leaderR2Repository.findByUserId(coin.getLeaderId())
                 .map(leader -> {
                     Double beforeLeaderKRW = leader.getTotalKRW();
@@ -73,6 +68,7 @@ public class TransStep {
 //                    log.info("12312312313"+maxList[2].toString());
                     return maxList;
                 });
+
         return map;
     }
 
