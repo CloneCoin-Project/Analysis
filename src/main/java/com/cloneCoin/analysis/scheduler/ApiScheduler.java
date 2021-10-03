@@ -63,7 +63,7 @@ public class ApiScheduler {
                                         .coinName(afterMap.get(key).getCoinName())
                                         .coinQuantity(0.0)
                                         .leader(leader)
-                                        .coinQuantity(0.0)
+                                        .avgPrice(0.0)
                                         .build();
                                 transStep.transCoinInfo(maxList, coinBefore, transactionDtos);
                             }
