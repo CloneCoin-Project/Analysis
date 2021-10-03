@@ -30,7 +30,7 @@ public class LeaderListener {
     private String key;
     private final LeaderRepository leaderRepository;
 
-    @KafkaListener(topics = "user-kafka", groupId = "foo")
+    @KafkaListener(topics = "user-leader-apply-topic", groupId = "foo")
     public void ListenLeader(@Payload LeaderDto leader) throws Exception {
         if(leaderRepository.existsById(leader.getLeaderId())){
             throw new LeaderAlreadyExistsException("Leader Already Exists!");
