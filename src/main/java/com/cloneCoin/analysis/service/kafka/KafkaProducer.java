@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class KafkaProducer {
 
-    private static final String TOPIC = "user-kafka";
+    private static final String TOPIC = "user-leader-apply-topic";
     private static final String BUYSELL = "buy-sell";
     private static final String DepositWithdrawal = "Deposit-Withdrawal";
     private final KafkaTemplate<String, Object> kafkaTemplate;
