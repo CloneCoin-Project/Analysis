@@ -8,11 +8,14 @@ import com.cloneCoin.analysis.dto.TransactionDto;
 import com.cloneCoin.analysis.repository.CoinRepository;
 import com.cloneCoin.analysis.repository.LeaderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class TransStep {
 
@@ -29,19 +32,32 @@ public class TransStep {
 
         for (TransactionDto tran:transactionDtos) {
             if(tran.getSearch().equals("2")){
-                coin.setCoinQuantity(coin.getCoinQuantity() - tran.getUnits());
+                BigDecimal a = new BigDecimal(String.valueOf(coin.getCoinQuantity()));
+                BigDecimal b = new BigDecimal(String.valueOf(tran.getUnits()));
+                BigDecimal c = new BigDecimal(String.valueOf(tran.getPrice()));
+                BigDecimal d = new BigDecimal(String.valueOf(leader.getTotalKRW()));
+                coin.setCoinQuantity(Double.parseDouble(String.valueOf(a.subtract(b))));
                 if (coin.getCoinQuantity().equals(0.0)) {
                     coin.setAvgPrice(0.0);
                 }
-                leader.setTotalKRW(leader.getTotalKRW() + (tran.getUnits() * tran.getPrice()));
+                leader.setTotalKRW(Double.parseDouble(String.valueOf(d.add(b.multiply(c)))));
                 isTrans = true;
             }
             else if(tran.getSearch().equals("1")){
-                Double quantity = coin.getCoinQuantity() + tran.getUnits();
-                Double totalAmount = (coin.getAvgPrice() * coin.getCoinQuantity()) + (tran.getPrice() * tran.getUnits());
-                leader.setTotalKRW(leader.getTotalKRW() - (tran.getPrice() * tran.getUnits()));
+                BigDecimal a = new BigDecimal(String.valueOf(coin.getCoinQuantity()));
+                BigDecimal b = new BigDecimal(String.valueOf(tran.getUnits()));
+                BigDecimal c = new BigDecimal(String.valueOf(tran.getPrice()));
+                BigDecimal d = new BigDecimal(String.valueOf(coin.getAvgPrice()));
+                BigDecimal e = new BigDecimal(String.valueOf(leader.getTotalKRW()));
+
+                Double quantity = Double.parseDouble(String.valueOf(a.add(b)));
+                Double totalAmount = Double.parseDouble(String.valueOf((d.multiply(a)).add(c.multiply(b))));
+//                leader.setTotalKRW(leader.getTotalKRW() - (tran.getPrice() * tran.getUnits()));
+                leader.setTotalKRW(Double.parseDouble(String.valueOf(e.subtract(c.multiply(b)))));
                 coin.setCoinQuantity(quantity);
-                coin.setAvgPrice(totalAmount / quantity);
+                a = new BigDecimal(String.valueOf(quantity));
+                b = new BigDecimal(String.valueOf(totalAmount));
+                coin.setAvgPrice(Double.parseDouble(String.valueOf(b.divide(a))));
                 isTrans = true;
             }
             else {
@@ -70,9 +86,12 @@ public class TransStep {
     }
 
     private Double saveWi(MaxCoinTranDto maxCoinTranDto, Double total, Double price, String search){
+        BigDecimal a = new BigDecimal(Double.parseDouble(String.valueOf(total)));
+        BigDecimal b = new BigDecimal(Double.parseDouble(String.valueOf(price)));
+        Double result = Double.parseDouble(String.valueOf(a.subtract(b)));
         CoinInfoDto krw = CoinInfoDto.builder()
                 .coinName("KRW")
-                .avgPrice(total - price)
+                .avgPrice(result)
                 .coinQuantity(0.0)
                 .build();
         Set<CoinInfoDto> krwSet = new HashSet<>();
@@ -83,9 +102,12 @@ public class TransStep {
     }
 
     private Double saveDe(MaxCoinTranDto maxCoinTranDto, Double total, Double price, String search){
+        BigDecimal a = new BigDecimal(Double.parseDouble(String.valueOf(total)));
+        BigDecimal b = new BigDecimal(Double.parseDouble(String.valueOf(price)));
+        Double result = Double.parseDouble(String.valueOf(a.add(b)));
         CoinInfoDto krw = CoinInfoDto.builder()
                 .coinName("KRW")
-                .avgPrice(total + price)
+                .avgPrice(result)
                 .coinQuantity(0.0)
                 .build();
         Set<CoinInfoDto> krwSet = new HashSet<>();
