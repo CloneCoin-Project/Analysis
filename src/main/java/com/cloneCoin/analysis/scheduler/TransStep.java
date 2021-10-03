@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
 
 @Component
@@ -57,7 +58,7 @@ public class TransStep {
                 coin.setCoinQuantity(quantity);
                 a = new BigDecimal(String.valueOf(quantity));
                 b = new BigDecimal(String.valueOf(totalAmount));
-                coin.setAvgPrice(Double.parseDouble(String.valueOf(b.divide(a))));
+                coin.setAvgPrice(Double.parseDouble(String.valueOf(b.divide(a, MathContext.DECIMAL32))));
                 isTrans = true;
             }
             else {
