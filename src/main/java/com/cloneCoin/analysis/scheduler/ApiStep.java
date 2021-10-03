@@ -76,8 +76,8 @@ public class ApiStep {
             List<Map<String, Object>> data = new ObjectMapper().readValue(jsonObj.get("data").toString(), new TypeReference<List<Map<String, Object>>>() {
             });
             data.stream()
-//                    .filter(d -> Long.parseLong(d.get("transfer_date").toString().substring(0,13)) >= leader.getLastTransTime())
-                    .filter(d -> Long.parseLong(d.get("transfer_date").toString().substring(0,13)) >= 1L)
+                    .filter(d -> Long.parseLong(d.get("transfer_date").toString().substring(0,13)) >= leader.getLastTransTime())
+//                    .filter(d -> Long.parseLong(d.get("transfer_date").toString().substring(0,13)) >= 1L)
                     .forEach(d -> {
                         TransactionDto build = TransactionDto
                                 .builder()
