@@ -83,15 +83,14 @@ public class ApiScheduler {
                                     }
                                     return max;
                                 })
-                                .forEach(mono -> {
+                                .map(mono -> {
                                     mono.subscribe(maxCoinTranDtos -> {
                                         for (MaxCoinTranDto m:maxCoinTranDtos) {
-                                            log.info("====== "+m.toString());
+                                            log.info("12312312312 "+m.toString());
                                         }
-                                        Mono<MaxCoinTranDto[]> mono1 = null;
+                                        Mono<MaxCoinTranDto[]> mono1 = Mono.just(maxCoinTranDtos);
                                         for(String key:beforeMap.keySet()){
                                             if(!finalAfterMap1.containsKey(key)){
-                                                log.info("123123123123    "+key);
                                                 List<TransactionDto> transactionDtos = null;
                                                 try {
                                                     transactionDtos = apiStep.transactionsAPI(leader, finalAfterMap1.get(key).getCoinName());
@@ -99,18 +98,54 @@ public class ApiScheduler {
                                                     e.printStackTrace();
                                                 }
                                                 mono1 = transStep.transCoinInfo(maxCoinTranDtos, beforeMap.get(key), transactionDtos);
-                                                mono1.subscribe(maxCoinTranDtos1 -> {
-                                                    for (MaxCoinTranDto m:maxCoinTranDtos1) {
-                                                        log.info("======123 "+m.toString());
-                                                    }
-                                                });
                                             }
                                         }
+                                        mono1.subscribe(maxCoinTranDtos1 -> {
+                                            for (MaxCoinTranDto m:maxCoinTranDtos1) {
+                                                log.info("======" + m.toString());
+                                            }
+                                        });
+
+                                        mono1.subscribe(maxCoinTranDtos1 -> {
+                                            for(int i = 0;i<maxCoinTranDtos1.length;i++){
+                                                if(maxCoinTranDtos1[i].getSearch() != null && maxCoinTranDtos1[i].getSearch().equals("1")){
+                                                    if(sameCoinList.size() > 0){
+                                                        Set<CoinInfoDto> beforeCoinSet = maxCoinTranDtos1[i].getBeforeCoinSet();
+                                                        Set<CoinInfoDto> afterCoinSet = maxCoinTranDtos1[i].getAfterCoinSet();
+                                                        sameCoinList.stream()
+                                                                .forEach(coinInfoDto ->{
+                                                                    beforeCoinSet.add(coinInfoDto);
+                                                                    afterCoinSet.add(coinInfoDto);
+                                                                });
+                                                        maxCoinTranDtos1[i].setBeforeCoinSet(beforeCoinSet);
+                                                        maxCoinTranDtos1[i].setAfterCoinSet(afterCoinSet);
+                                                    }
+                                                    Set<CoinInfoDto> collect = maxCoinTranDtos1[i].getBeforeCoinSet().stream().collect(Collectors.toSet());
+
+                                                    beforeTotal.setCoins(collect);
+                                                    Set<CoinInfoDto> collect1 = maxCoinTranDtos1[i].getAfterCoinSet().stream().collect(Collectors.toSet());
+                                                    afterTotal.setCoins(collect1);
+                                                    buySell.setAfter(afterTotal);
+                                                    buySell.setBefore(beforeTotal);
+                                                    buySell.getBefore().setTotalKRW(maxCoinTranDtos1[i].getBeforeTotalKRW());
+                                                    buySell.getAfter().setTotalKRW(maxCoinTranDtos1[i].getAfterTotalKRW());
+                                                    buySell.setUserId(leader.getUserId());
+                                                    kafkaProducer.sendBuySell(buySell);
+                                                } else if(maxCoinTranDtos1[i].getSearch() != null) {
+                                                    drawlDto.setType(maxCoinTranDtos1[i].getSearch());
+                                                    List<CoinInfoDto> collect = maxCoinTranDtos1[i].getAfterCoinSet().stream().collect(Collectors.toList());
+                                                    drawlDto.setTotalKRW(collect.get(0).getAvgPrice());
+                                                    drawlDto.setUserId(leader.getUserId());
+                                                    kafkaProducer.sendDrawl(drawlDto);
+                                                }
+                                            }
+                                            leader.setLastTransTime(ts);
+                                            log.info(leader.toString());
+                                            leaderR2Repository.save(leader).subscribe();
+                                        });
                                     });
+                                    return 0;
                                 });
-                        leader.setLastTransTime(ts);
-                        log.info(leader.toString());
-                        leaderR2Repository.save(leader).subscribe();
                     });
         });
 
