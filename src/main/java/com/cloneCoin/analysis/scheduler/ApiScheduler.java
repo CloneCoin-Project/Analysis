@@ -96,8 +96,12 @@ public class ApiScheduler {
                         maxList[i].setBeforeCoinSet(beforeCoinSet);
                         maxList[i].setAfterCoinSet(afterCoinSet);
                     }
-                    beforeTotal.setCoins(maxList[i].getBeforeCoinSet().stream().collect(Collectors.toSet()));
-                    afterTotal.setCoins(maxList[i].getAfterCoinSet().stream().collect(Collectors.toSet()));
+                    List<CoinInfoDto> bcollect = maxList[i].getBeforeCoinSet().stream().collect(Collectors.toList());
+                    bcollect.sort(Comparator.comparing(CoinInfoDto::getCoinName));
+                    beforeTotal.setCoins(bcollect);
+                    List<CoinInfoDto> acollect = maxList[i].getAfterCoinSet().stream().collect(Collectors.toList());
+                    acollect.sort(Comparator.comparing(CoinInfoDto::getCoinName));
+                    afterTotal.setCoins(acollect);
                     buySell.setAfter(afterTotal);
                     buySell.setBefore(beforeTotal);
                     buySell.getBefore().setTotalKRW(maxList[i].getBeforeTotalKRW());
