@@ -63,9 +63,9 @@ public class TransStep {
                     if (beforeLeaderKRW.compareTo(leader.getTotalKRW()) != 0) {
                         leaderR2Repository.save(leader).subscribe();
                     }
-//                    log.info("12312312313"+maxList[0].toString());
-//                    log.info("12312312313"+maxList[1].toString());
-//                    log.info("12312312313"+maxList[2].toString());
+                    log.info("12312312313"+maxList[0].toString());
+                    log.info("12312312313"+maxList[1].toString());
+                    log.info("12312312313"+maxList[2].toString());
                     return maxList;
                 });
 
