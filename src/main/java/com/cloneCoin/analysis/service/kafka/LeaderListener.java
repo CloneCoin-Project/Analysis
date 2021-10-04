@@ -29,10 +29,12 @@ public class LeaderListener {
     @Value("${cryptutil.key}")
     private String key;
     private final LeaderRepository leaderRepository;
+    private final KafkaProducer kafkaProducer;
 
     @KafkaListener(topics = "user-leader-apply-topic", groupId = "foo")
     public void ListenLeader(@Payload LeaderDto leader) throws Exception {
         if(leaderRepository.existsById(leader.getLeaderId())){
+//            kafkaProducer.sendSignal("ERROR");
             throw new LeaderAlreadyExistsException("Leader Already Exists!");
         }
         String encryptedSecretKey = encrypt(leader.getSecretKey());
@@ -45,6 +47,7 @@ public class LeaderListener {
                 .secretKey(encryptedSecretKey)
                 .build();
         if(balanceAPI(newLeader)){
+            kafkaProducer.sendSignal(newLeader.getUserId().toString());
             log.info("Leader Created : " + leader);
         }
     }
@@ -58,6 +61,7 @@ public class LeaderListener {
         rgParams.put("currency", "ALL");
         String result = api.callApi("/info/balance", rgParams);
         if(result.contains("error")){
+//            kafkaProducer.sendSignal("ERROR");
             throw new InvalidKeysException("apiKey or secretKey was wrong!");
         }
         JSONParser parser = new JSONParser();

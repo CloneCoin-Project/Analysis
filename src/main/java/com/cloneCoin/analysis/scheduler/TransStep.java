@@ -2,11 +2,14 @@ package com.cloneCoin.analysis.scheduler;
 
 import com.cloneCoin.analysis.domain.Coin;
 import com.cloneCoin.analysis.domain.Leader;
+import com.cloneCoin.analysis.domain.Type;
 import com.cloneCoin.analysis.dto.CoinInfoDto;
 import com.cloneCoin.analysis.dto.MaxCoinTranDto;
+import com.cloneCoin.analysis.dto.PushDto;
 import com.cloneCoin.analysis.dto.TransactionDto;
 import com.cloneCoin.analysis.repository.CoinRepository;
 import com.cloneCoin.analysis.repository.LeaderRepository;
+import com.cloneCoin.analysis.service.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,6 +26,7 @@ public class TransStep {
     private final ApiStep apiStep;
     private final CoinRepository coinRepository;
     private final LeaderRepository leaderRepository;
+    private final KafkaProducer kafkaProducer;
 
     public void transCoinInfo(MaxCoinTranDto[] maxList, Coin coin, List<TransactionDto> transactionDtos) {
         Leader leader = coin.getLeader();
@@ -42,6 +46,14 @@ public class TransStep {
                     coin.setAvgPrice(0.0);
                 }
                 leader.setTotalKRW(Double.parseDouble(String.valueOf(d.add(b.multiply(c)))));
+                String msg = coin.getCoinName() + " " + tran.getUnits() + "개를 " + tran.getPrice() + "원에 판매하였습니다.";
+                String type = "SOLD";
+                PushDto pushDto = PushDto.builder()
+                        .leaderId(leader.getUserId())
+                        .type(type)
+                        .message(msg)
+                        .build();
+                kafkaProducer.sendPush(pushDto);
                 isTrans = true;
             }
             else if(tran.getSearch().equals("1")){
@@ -59,6 +71,14 @@ public class TransStep {
                 a = new BigDecimal(String.valueOf(quantity));
                 b = new BigDecimal(String.valueOf(totalAmount));
                 coin.setAvgPrice(Double.parseDouble(String.valueOf(b.divide(a, MathContext.DECIMAL32))));
+                String msg = coin.getCoinName() + " " + tran.getUnits() + "개를 " + tran.getPrice() + "원에 구매하였습니다.";
+                String type = "BOUGHT";
+                PushDto pushDto = PushDto.builder()
+                        .leaderId(leader.getUserId())
+                        .type(type)
+                        .message(msg)
+                        .build();
+                kafkaProducer.sendPush(pushDto);
                 isTrans = true;
             }
             else {

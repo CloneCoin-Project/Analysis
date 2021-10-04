@@ -1,6 +1,8 @@
 package com.cloneCoin.analysis.config.kafka;
 
 import com.cloneCoin.analysis.dto.LeaderDto;
+import com.cloneCoin.analysis.service.kafka.KafkaProducer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -22,13 +24,17 @@ import java.util.Map;
 @EnableKafka
 @Configuration
 @Slf4j
+@RequiredArgsConstructor
 public class ListenerConfig {
+
+    private final KafkaProducer kafkaProducer;
 
     @Bean
     ConcurrentKafkaListenerContainerFactory<String, LeaderDto> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, LeaderDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.setErrorHandler(((e, consumerRecord) ->{
+            kafkaProducer.sendSignal("ERROR");
             log.error("error : "+ e);
             log.info("Leader wasn't created!!");
                 }));
@@ -47,7 +53,7 @@ public class ListenerConfig {
     public Map<String, Object> consumerConfigurations() {
         JsonDeserializer<Object> deserializer = new JsonDeserializer<>(Object.class);
         deserializer.setRemoveTypeHeaders(false);
-        deserializer.addTrustedPackages("com.cloneCoin.analysis.dto.LeaderDto");
+        deserializer.addTrustedPackages("*");
         deserializer.setUseTypeMapperForKey(true);
 
         Map<String, Object> configurations = new HashMap<>();
