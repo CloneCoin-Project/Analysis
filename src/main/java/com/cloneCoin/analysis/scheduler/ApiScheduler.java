@@ -9,16 +9,15 @@ import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Component
@@ -63,92 +62,86 @@ public class ApiScheduler {
                         TransactionsDTO buySell = new TransactionsDTO();
                         DrawlDto drawlDto = new DrawlDto();
                         List<CoinInfoDto> sameCoinList = new ArrayList<>();
+                        AtomicReference<Mono<MaxCoinTranDto[]>> result = new AtomicReference<>(Mono.empty());
                         Map<String, Coin> finalAfterMap = afterMap;
-                        log.info("1");
-                        Map<String, Coin> finalAfterMap1 = afterMap;
                         afterMap.keySet().stream()
-                                .map(key -> {
-                                    Mono<MaxCoinTranDto[]> max = Mono.empty();
+                                .forEach(key -> {
                                     if (beforeMap.containsKey(key) && (finalAfterMap.get(key).getCoinQuantity().compareTo(beforeMap.get(key).getCoinQuantity())) == 0) {
                                         sameCoinList.add(beforeMap.get(key).toCoinDto());
-                                    } else if (beforeMap.containsKey(key)) {
+                                    } else {
                                         List<TransactionDto> transactionDtos = null;
                                         try {
                                             transactionDtos = apiStep.transactionsAPI(leader, finalAfterMap.get(key).getCoinName());
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
-                                        max = transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos);
-                                    }
-                                    max.subscribe(maxCoinTranDtos -> {
-                                        for (MaxCoinTranDto m:maxCoinTranDtos) {
-                                            log.info("======== "+m.toString());
+                                        if(beforeMap.containsKey(key)){
+                                            result.set(transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos));
+                                        }else{
+                                            log.info("====123 " + beforeMap.get(key));
+                                            Coin coinBefore = Coin.builder()
+                                                    .coinName(finalAfterMap.get(key).getCoinName())
+                                                    .coinQuantity(0.0)
+                                                    .leaderId(leader.getUserId())
+                                                    .avgPrice(0.0)
+                                                    .build();
+                                            result.set(transStep.transCoinInfo(maxList, coinBefore, transactionDtos));
                                         }
-                                    });
-                                    log.info("2");
-                                    return max;
+                                    }
                                 });
-//                                .map(mono -> {
-//                                    mono.subscribe(maxCoinTranDtos -> {
-//                                        for (MaxCoinTranDto m:maxCoinTranDtos) {
-//                                            log.info("12312312312 "+m.toString());
-//                                        }
-//                                        Mono<MaxCoinTranDto[]> mono1 = Mono.just(maxCoinTranDtos);
-//                                        for(String key:beforeMap.keySet()){
-//                                            if(!finalAfterMap1.containsKey(key)){
-//                                                List<TransactionDto> transactionDtos = null;
-//                                                try {
-//                                                    transactionDtos = apiStep.transactionsAPI(leader, finalAfterMap1.get(key).getCoinName());
-//                                                } catch (Exception e) {
-//                                                    e.printStackTrace();
-//                                                }
-//                                                mono1 = transStep.transCoinInfo(maxCoinTranDtos, beforeMap.get(key), transactionDtos);
-//                                            }
-//                                        }
-//                                        for (MaxCoinTranDto m:maxCoinTranDtos) {
-//                                            log.info("======" + m.toString());
-//                                        }
-
-//                                        mono1.subscribe(maxCoinTranDtos1 -> {
-//                                            for(int i = 0;i<maxCoinTranDtos1.length;i++){
-//                                                if(maxCoinTranDtos1[i].getSearch() != null && maxCoinTranDtos1[i].getSearch().equals("1")){
-//                                                    if(sameCoinList.size() > 0){
-//                                                        Set<CoinInfoDto> beforeCoinSet = maxCoinTranDtos1[i].getBeforeCoinSet();
-//                                                        Set<CoinInfoDto> afterCoinSet = maxCoinTranDtos1[i].getAfterCoinSet();
-//                                                        sameCoinList.stream()
-//                                                                .forEach(coinInfoDto ->{
-//                                                                    beforeCoinSet.add(coinInfoDto);
-//                                                                    afterCoinSet.add(coinInfoDto);
-//                                                                });
-//                                                        maxCoinTranDtos1[i].setBeforeCoinSet(beforeCoinSet);
-//                                                        maxCoinTranDtos1[i].setAfterCoinSet(afterCoinSet);
-//                                                    }
-//                                                    Set<CoinInfoDto> collect = maxCoinTranDtos1[i].getBeforeCoinSet().stream().collect(Collectors.toSet());
-//
-//                                                    beforeTotal.setCoins(collect);
-//                                                    Set<CoinInfoDto> collect1 = maxCoinTranDtos1[i].getAfterCoinSet().stream().collect(Collectors.toSet());
-//                                                    afterTotal.setCoins(collect1);
-//                                                    buySell.setAfter(afterTotal);
-//                                                    buySell.setBefore(beforeTotal);
-//                                                    buySell.getBefore().setTotalKRW(maxCoinTranDtos1[i].getBeforeTotalKRW());
-//                                                    buySell.getAfter().setTotalKRW(maxCoinTranDtos1[i].getAfterTotalKRW());
-//                                                    buySell.setUserId(leader.getUserId());
-//                                                    kafkaProducer.sendBuySell(buySell);
-//                                                } else if(maxCoinTranDtos1[i].getSearch() != null) {
-//                                                    drawlDto.setType(maxCoinTranDtos1[i].getSearch());
-//                                                    List<CoinInfoDto> collect = maxCoinTranDtos1[i].getAfterCoinSet().stream().collect(Collectors.toList());
-//                                                    drawlDto.setTotalKRW(collect.get(0).getAvgPrice());
-//                                                    drawlDto.setUserId(leader.getUserId());
-//                                                    kafkaProducer.sendDrawl(drawlDto);
-//                                                }
-//                                            }
-//                                            leader.setLastTransTime(ts);
-//                                            log.info(leader.toString());
-//                                            leaderR2Repository.save(leader).subscribe();
-//                                        });
-//                                    });
-//                                    return 0;
-//                                });
+                        result.get().subscribe(maxCoinTranDtos -> {
+                            for (MaxCoinTranDto m:maxCoinTranDtos) {
+                                        for(String key:beforeMap.keySet()){
+                                            if(!finalAfterMap.containsKey(key)){
+                                                List<TransactionDto> transactionDtos = null;
+                                                try {
+                                                    transactionDtos = apiStep.transactionsAPI(leader, finalAfterMap.get(key).getCoinName());
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                                result.set(transStep.transCoinInfo(maxCoinTranDtos, beforeMap.get(key), transactionDtos));
+                                            }
+                                        }
+                            }
+                        });
+                        result.get().subscribe(maxCoinTranDtos -> {
+                            for(int i = 0;i<maxCoinTranDtos.length;i++){
+                                if(maxCoinTranDtos[i].getSearch() != null && maxCoinTranDtos[i].getSearch().equals("1")){
+                                    if(sameCoinList.size() > 0){
+                                        Set<CoinInfoDto> beforeCoinSet = maxCoinTranDtos[i].getBeforeCoinSet();
+                                        Set<CoinInfoDto> afterCoinSet = maxCoinTranDtos[i].getAfterCoinSet();
+                                        sameCoinList.stream()
+                                                .forEach(coinInfoDto ->{
+                                                    beforeCoinSet.add(coinInfoDto);
+                                                    afterCoinSet.add(coinInfoDto);
+                                                });
+                                        maxCoinTranDtos[i].setBeforeCoinSet(beforeCoinSet);
+                                        maxCoinTranDtos[i].setAfterCoinSet(afterCoinSet);
+                                    }
+                                    List<CoinInfoDto> bcollect = maxList[i].getBeforeCoinSet().stream().collect(Collectors.toList());
+                                    bcollect.sort(Comparator.comparing(CoinInfoDto::getCoinName));
+                                    beforeTotal.setCoins(bcollect);
+                                    List<CoinInfoDto> acollect = maxList[i].getAfterCoinSet().stream().collect(Collectors.toList());
+                                    acollect.sort(Comparator.comparing(CoinInfoDto::getCoinName));
+                                    afterTotal.setCoins(acollect);
+                                    buySell.setAfter(afterTotal);
+                                    buySell.setBefore(beforeTotal);
+                                    buySell.getBefore().setTotalKRW(maxList[i].getBeforeTotalKRW());
+                                    buySell.getAfter().setTotalKRW(maxList[i].getAfterTotalKRW());
+                                    buySell.setUserId(leader.getUserId());
+                                    kafkaProducer.sendBuySell(buySell);
+                                } else if(maxCoinTranDtos[i].getSearch() != null) {
+                                    drawlDto.setType(maxCoinTranDtos[i].getSearch());
+                                    List<CoinInfoDto> collect2 = maxCoinTranDtos[i].getAfterCoinSet().stream().collect(Collectors.toList());
+                                    drawlDto.setTotalKRW(collect2.get(0).getAvgPrice());
+                                    drawlDto.setUserId(leader.getUserId());
+                                    kafkaProducer.sendDrawl(drawlDto);
+                                }
+                            }
+                            leader.setLastTransTime(ts);
+                            log.info(leader.toString());
+                            leaderR2Repository.save(leader).subscribe();
+                        });
                     });
         });
 

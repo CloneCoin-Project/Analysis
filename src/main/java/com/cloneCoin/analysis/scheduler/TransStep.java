@@ -12,7 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 @Component
 @Slf4j
@@ -24,7 +28,7 @@ public class TransStep {
     private final CoinR2Repository coinR2Repository;
 
     public Mono<MaxCoinTranDto[]> transCoinInfo(MaxCoinTranDto[] maxList, Coin coin, List<TransactionDto> transactionDtos) {
-        Mono<MaxCoinTranDto[]> map = leaderR2Repository.findByUserId(coin.getLeaderId())
+        Mono<MaxCoinTranDto[]> map1 = leaderR2Repository.findByUserId(coin.getLeaderId())
                 .map(leader -> {
                     Double beforeLeaderKRW = leader.getTotalKRW();
                     int count = 0;
@@ -32,14 +36,30 @@ public class TransStep {
                     CoinInfoDto beforeCoinInfo = coin.toCoinDto();
                     for (TransactionDto tran : transactionDtos) {
                         if (tran.getSearch().equals("2")) {
-                            coin.setCoinQuantity(coin.getCoinQuantity() - tran.getUnits());
-                            leader.setTotalKRW(leader.getTotalKRW() + (tran.getUnits() * tran.getPrice()));
+                            BigDecimal a = new BigDecimal(String.valueOf(coin.getCoinQuantity()));
+                            BigDecimal b = new BigDecimal(String.valueOf(tran.getUnits()));
+                            BigDecimal c = new BigDecimal(String.valueOf(tran.getPrice()));
+                            BigDecimal d = new BigDecimal(String.valueOf(leader.getTotalKRW()));
+                            coin.setCoinQuantity(Double.parseDouble(String.valueOf(a.subtract(b))));
+                            if (coin.getCoinQuantity().equals(0.0)) {
+                                coin.setAvgPrice(0.0);
+                            }
+                            leader.setTotalKRW(Double.parseDouble(String.valueOf(d.add(b.multiply(c)))));
                             isTrans = true;
                         } else if (tran.getSearch().equals("1")) {
-                            Double quantity = coin.getCoinQuantity() + tran.getUnits();
-                            Double totalAmount = (coin.getAvgPrice() * coin.getCoinQuantity()) + (tran.getPrice() * tran.getUnits());
+                            BigDecimal a = new BigDecimal(String.valueOf(coin.getCoinQuantity()));
+                            BigDecimal b = new BigDecimal(String.valueOf(tran.getUnits()));
+                            BigDecimal c = new BigDecimal(String.valueOf(tran.getPrice()));
+                            BigDecimal d = new BigDecimal(String.valueOf(coin.getAvgPrice()));
+                            BigDecimal e = new BigDecimal(String.valueOf(leader.getTotalKRW()));
+
+                            Double quantity = Double.parseDouble(String.valueOf(a.add(b)));
+                            Double totalAmount = Double.parseDouble(String.valueOf((d.multiply(a)).add(c.multiply(b))));
+                            leader.setTotalKRW(Double.parseDouble(String.valueOf(e.subtract(c.multiply(b)))));
                             coin.setCoinQuantity(quantity);
-                            coin.setAvgPrice(totalAmount / quantity);
+                            a = new BigDecimal(String.valueOf(quantity));
+                            b = new BigDecimal(String.valueOf(totalAmount));
+                            coin.setAvgPrice(Double.parseDouble(String.valueOf(b.divide(a, MathContext.DECIMAL32))));
                             isTrans = true;
                         } else {
                             if (isTrans == true) {
@@ -63,19 +83,19 @@ public class TransStep {
                     if (beforeLeaderKRW.compareTo(leader.getTotalKRW()) != 0) {
                         leaderR2Repository.save(leader).subscribe();
                     }
-                    log.info("12312312313"+maxList[0].toString());
-                    log.info("12312312313"+maxList[1].toString());
-                    log.info("12312312313"+maxList[2].toString());
                     return maxList;
                 });
-
-        return map;
+        
+        return map1;
     }
 
     private Double saveWi(MaxCoinTranDto maxCoinTranDto, Double total, Double price, String search){
+        BigDecimal a = new BigDecimal(Double.parseDouble(String.valueOf(total)));
+        BigDecimal b = new BigDecimal(Double.parseDouble(String.valueOf(price)));
+        Double result = Double.parseDouble(String.valueOf(a.subtract(b)));
         CoinInfoDto krw = CoinInfoDto.builder()
                 .coinName("KRW")
-                .avgPrice(total - price)
+                .avgPrice(result)
                 .coinQuantity(0.0)
                 .build();
         Set<CoinInfoDto> krwSet = new HashSet<>();
@@ -86,9 +106,12 @@ public class TransStep {
     }
 
     private Double saveDe(MaxCoinTranDto maxCoinTranDto, Double total, Double price, String search){
+        BigDecimal a = new BigDecimal(Double.parseDouble(String.valueOf(total)));
+        BigDecimal b = new BigDecimal(Double.parseDouble(String.valueOf(price)));
+        Double result = Double.parseDouble(String.valueOf(a.add(b)));
         CoinInfoDto krw = CoinInfoDto.builder()
                 .coinName("KRW")
-                .avgPrice(total + price)
+                .avgPrice(result)
                 .coinQuantity(0.0)
                 .build();
         Set<CoinInfoDto> krwSet = new HashSet<>();
