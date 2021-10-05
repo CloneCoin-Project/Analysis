@@ -46,7 +46,7 @@ public class TransStep {
                     coin.setAvgPrice(0.0);
                 }
                 leader.setTotalKRW(Double.parseDouble(String.valueOf(d.add(b.multiply(c)))));
-                String msg = coin.getCoinName() + " " + tran.getUnits() + "개를 " + tran.getPrice() + "원에 판매하였습니다.";
+                String msg = leader.getUserName() + "님이 " + coin.getCoinName() + " 코인 " + tran.getUnits() + "개를 " + tran.getPrice() + "원에 판매하였습니다.";
                 String type = "SOLD";
                 PushDto pushDto = PushDto.builder()
                         .leaderId(leader.getUserId())
@@ -71,7 +71,7 @@ public class TransStep {
                 a = new BigDecimal(String.valueOf(quantity));
                 b = new BigDecimal(String.valueOf(totalAmount));
                 coin.setAvgPrice(Double.parseDouble(String.valueOf(b.divide(a, MathContext.DECIMAL32))));
-                String msg = coin.getCoinName() + " " + tran.getUnits() + "개를 " + tran.getPrice() + "원에 구매하였습니다.";
+                String msg =leader.getUserName() + "님이 " + coin.getCoinName() + " 코인 " + tran.getUnits() + "개를 " + tran.getPrice() + "원에 구매하였습니다.";
                 String type = "BOUGHT";
                 PushDto pushDto = PushDto.builder()
                         .leaderId(leader.getUserId())

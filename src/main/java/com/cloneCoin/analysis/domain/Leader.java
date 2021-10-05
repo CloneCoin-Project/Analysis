@@ -24,6 +24,7 @@ public class Leader {
     private Long id;
 
     private Long userId;
+    private String userName;
     private Double totalKRW;
     private Long lastTransTime;
     private String apiKey;

@@ -26,6 +26,7 @@ public class KafkaProducer {
     public LeaderDto sendTest() {
         LeaderDto leader = new LeaderDto();
         leader.setLeaderId(1L);
+        leader.setLeaderName("시헌");
         leader.setApiKey("25df4195dd072124e06545629a515d56");
         leader.setSecretKey("058f77c9fb075ee1b2077e825e77291c");
         kafkaTemplate.send(TOPIC, leader);

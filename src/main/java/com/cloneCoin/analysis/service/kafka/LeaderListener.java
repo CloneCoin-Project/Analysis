@@ -42,6 +42,7 @@ public class LeaderListener {
         Leader newLeader = Leader.builder()
                 .userId(leader.getLeaderId())
                 .totalKRW(0.0)
+                .userName(leader.getLeaderName())
                 .lastTransTime(System.currentTimeMillis())
                 .apiKey(leader.getApiKey())
                 .secretKey(encryptedSecretKey)
