@@ -2,18 +2,16 @@ server:
   port: 8003 # Random Port : 0
 
 spring:
+  profiles:
+    default: dev
   application:
     name: analysis-server
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-
   r2dbc:
     url: r2dbc:mysql://localhost:3306/r2test?serverTimezone=KST&characterEncoding=UTF-8
     username: root
     password: 1234
-    hibernate:
-      ddl-auto: create-drop
 
 cryptutil:
   key: "1234567890123456"
@@ -32,3 +30,18 @@ eureka:
 
 ---
 
+spring:
+  config:
+    activate:
+      on-profile: prod
+  r2dbc:
+    url: r2dbc:mysql://clonecoin-analysis-db.crtppt0lvgk7.ap-northeast-2.rds.amazonaws.com:3306/analysis?serverTimezone=KST&characterEncoding=UTF-8
+    username: root
+    password: 1234
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
