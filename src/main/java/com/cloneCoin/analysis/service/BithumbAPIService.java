@@ -1,21 +1,6 @@
 package com.cloneCoin.analysis.service;
 
-import com.cloneCoin.analysis.config.aes.CryptUtil;
-import com.cloneCoin.analysis.domain.Coin;
-import com.cloneCoin.analysis.domain.Leader;
-import com.cloneCoin.analysis.dto.*;
-import com.cloneCoin.analysis.repository.LeaderRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.*;
 
 //@Service
 @RequiredArgsConstructor

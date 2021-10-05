@@ -5,7 +5,6 @@ import com.cloneCoin.analysis.domain.Leader;
 import com.cloneCoin.analysis.dto.*;
 import com.cloneCoin.analysis.repository.CoinR2Repository;
 import com.cloneCoin.analysis.repository.LeaderR2Repository;
-import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
