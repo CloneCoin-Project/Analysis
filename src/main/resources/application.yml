@@ -1,28 +1,79 @@
 server:
-  port: 0 # Random Port : 0
+  port: 8003 # Random Port : 0
 
 spring:
+  profiles:
+    default: dev
   application:
-    name: analysis-server
-  h2:
-    console:
-      enabled: true
-      settings:
-        web-allow-others: true
-      path: /h2-console
+    name: analysis
   datasource:
-    dirver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb
-    # username : sa
-    # password : 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test?serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: 1234
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: false
+    generate-ddl: true
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+
+cryptutil:
+  key: "1234567890123456"
 
 eureka:
   instance:
     hostname: localhost
     instance-id : ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
-
   client:
     registerWithEureka: true #gateway는 eureka에 등록할필요 없다. gateway는
     fetchRegistry: true #gateway는 eureka가 찾을 필요 없다
     serviceUrl:
       defaultZone: http://${eureka.instance.hostname}:8761/eureka/ # 서버가 가진 위치값
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://clonecoin-analysis-db.crtppt0lvgk7.ap-northeast-2.rds.amazonaws.com:3306/analysis?serverTimezone=UTC&characterEncoding=UTF-8
+    username: clonecoin
+    password: clonecoin
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    dirver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/test?serverTimezone=UTC&characterEncoding=UTF-8
+    username : root
+    password : 1015
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/test?serverTimezone=UTC&characterEncoding=UTF-8
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
