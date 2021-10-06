@@ -14,6 +14,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     open-in-view: false
+    generate-ddl: true
     show-sql: true
     hibernate:
       ddl-auto: create-drop
@@ -67,7 +68,6 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/test?serverTimezone=UTC&characterEncoding=UTF-8
     username: root
     password: 1234
