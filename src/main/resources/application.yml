@@ -25,12 +25,12 @@ cryptutil:
 eureka:
   instance:
     hostname: localhost
-    instance-id : ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
+    instance-id : ${spring.cloud.client.hostname}:${spring.application.instance_id:${server.port}}
   client:
     registerWithEureka: true #gateway는 eureka에 등록할필요 없다. gateway는
     fetchRegistry: true #gateway는 eureka가 찾을 필요 없다
     serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:8761/eureka/ # 서버가 가진 위치값
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/ # 서버가 가진
 
 ---
 
@@ -45,6 +45,17 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${server.port}}
+    prefer-ip-address: true
+    ip-address: 15.165.49.213 # ec2 specific server public address(user)
+
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://13.125.221.207:8761/eureka
 
 ---
 
@@ -77,3 +88,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+eureka:
+  instance:
+    hostname: localhost
+    instance-id : ${spring.cloud.client.hostname}:${spring.application.instance_id:${server.port}}
+  client:
+    registerWithEureka: true #gateway는 eureka에 등록할필요 없다. gateway는
+    fetchRegistry: true #gateway는 eureka가 찾을 필요 없다
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/ # 서버가 가진 위치값

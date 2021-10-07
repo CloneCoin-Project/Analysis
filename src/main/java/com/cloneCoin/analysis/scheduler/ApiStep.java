@@ -77,7 +77,7 @@ public class ApiStep {
             });
             data.stream()
                     .filter(d -> Long.parseLong(d.get("transfer_date").toString().substring(0,13)) >= leader.getLastTransTime())
-//                    .filter(d -> Long.parseLong(d.get("transfer_date").toString().substring(0,13)) >= 1L)
+//                    .filter(d -> Long.parseLong(d.get("transfer_date").toString().substring(0,13)) >= 1633618527702L)
                     .forEach(d -> {
                         TransactionDto build = TransactionDto
                                 .builder()

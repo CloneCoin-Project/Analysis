@@ -6,15 +6,18 @@ import com.cloneCoin.analysis.dto.*;
 import com.cloneCoin.analysis.repository.LeaderRepository;
 import com.cloneCoin.analysis.service.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ApiScheduler {
 
     private final LeaderRepository leaderRepository;
@@ -75,7 +78,7 @@ public class ApiScheduler {
                         if(!afterMap.containsKey(key)){
                             List<TransactionDto> transactionDtos = null;
                             try {
-                                transactionDtos = apiStep.transactionsAPI(leader, afterMap.get(key).getCoinName());
+                                transactionDtos = apiStep.transactionsAPI(leader, beforeMap.get(key).getCoinName());
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
