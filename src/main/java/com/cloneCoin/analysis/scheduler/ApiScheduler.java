@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,9 +53,9 @@ public class ApiScheduler {
                             e.printStackTrace();
                         }
                         Long ts = System.currentTimeMillis();
-                        MaxCoinTranDto[] maxList = new MaxCoinTranDto[maxCount];
+                        AtomicReferenceArray<MaxCoinTranDto> maxList = new AtomicReferenceArray<>(new MaxCoinTranDto[maxCount]);
                         for(int i = 0;i<maxCount;i++) {
-                            maxList[i] = new MaxCoinTranDto();
+                            maxList.set(i, new MaxCoinTranDto());
                         }
                         TotalDto beforeTotal = new TotalDto();
                         TotalDto afterTotal = new TotalDto();
@@ -62,6 +63,7 @@ public class ApiScheduler {
                         DrawlDto drawlDto = new DrawlDto();
                         List<CoinInfoDto> sameCoinList = new ArrayList<>();
                         AtomicReference<Mono<MaxCoinTranDto[]>> result = new AtomicReference<>(Mono.empty());
+
                         Map<String, Coin> finalAfterMap = afterMap;
                         afterMap.keySet().stream()
                                 .forEach(key -> {
@@ -75,7 +77,10 @@ public class ApiScheduler {
                                             e.printStackTrace();
                                         }
                                         if(beforeMap.containsKey(key)){
-                                            result.set(transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos));
+                                            AtomicReferenceArray<MaxCoinTranDto> maxCoinTranDtoAtomicReferenceArray = transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos);
+                                            for(int i = 0;i<maxList.length();i++){
+                                                maxList.set(i, maxCoinTranDtoAtomicReferenceArray.get(i));
+                                            }
                                         }else{
                                             log.info("====123 " + beforeMap.get(key));
                                             Coin coinBefore = Coin.builder()
@@ -84,8 +89,10 @@ public class ApiScheduler {
                                                     .leaderId(leader.getUserId())
                                                     .avgPrice(0.0)
                                                     .build();
-                                            result.set(transStep.transCoinInfo(maxList, coinBefore, transactionDtos));
-                                        }
+                                            AtomicReferenceArray<MaxCoinTranDto> maxCoinTranDtoAtomicReferenceArray = transStep.transCoinInfo(maxList, coinBefore, transactionDtos);
+                                            for(int i = 0;i<maxList.length();i++){
+                                                maxList.set(i, maxCoinTranDtoAtomicReferenceArray.get(i));
+                                            }                                        }
                                     }
                                 });
                         result.get().subscribe(maxCoinTranDtos -> {
@@ -94,12 +101,14 @@ public class ApiScheduler {
                                             if(!finalAfterMap.containsKey(key)){
                                                 List<TransactionDto> transactionDtos = null;
                                                 try {
-                                                    transactionDtos = apiStep.transactionsAPI(leader, finalAfterMap.get(key).getCoinName());
+                                                    transactionDtos = apiStep.transactionsAPI(leader, beforeMap.get(key).getCoinName());
                                                 } catch (Exception e) {
                                                     e.printStackTrace();
                                                 }
-                                                result.set(transStep.transCoinInfo(maxCoinTranDtos, beforeMap.get(key), transactionDtos));
-                                            }
+                                                AtomicReferenceArray<MaxCoinTranDto> maxCoinTranDtoAtomicReferenceArray = transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos);
+                                                for(int i = 0;i<maxList.length();i++){
+                                                    maxList.set(i, maxCoinTranDtoAtomicReferenceArray.get(i));
+                                                }                                            }
                                         }
                             }
                         });
@@ -117,16 +126,16 @@ public class ApiScheduler {
                                         maxCoinTranDtos[i].setBeforeCoinSet(beforeCoinSet);
                                         maxCoinTranDtos[i].setAfterCoinSet(afterCoinSet);
                                     }
-                                    List<CoinInfoDto> bcollect = maxList[i].getBeforeCoinSet().stream().collect(Collectors.toList());
+                                    List<CoinInfoDto> bcollect = maxList.get(i).getBeforeCoinSet().stream().collect(Collectors.toList());
                                     bcollect.sort(Comparator.comparing(CoinInfoDto::getCoinName));
                                     beforeTotal.setCoins(bcollect);
-                                    List<CoinInfoDto> acollect = maxList[i].getAfterCoinSet().stream().collect(Collectors.toList());
+                                    List<CoinInfoDto> acollect = maxList.get(i).getAfterCoinSet().stream().collect(Collectors.toList());
                                     acollect.sort(Comparator.comparing(CoinInfoDto::getCoinName));
                                     afterTotal.setCoins(acollect);
                                     buySell.setAfter(afterTotal);
                                     buySell.setBefore(beforeTotal);
-                                    buySell.getBefore().setTotalKRW(maxList[i].getBeforeTotalKRW());
-                                    buySell.getAfter().setTotalKRW(maxList[i].getAfterTotalKRW());
+                                    buySell.getBefore().setTotalKRW(maxList.get(i).getBeforeTotalKRW());
+                                    buySell.getAfter().setTotalKRW(maxList.get(i).getAfterTotalKRW());
                                     buySell.setUserId(leader.getUserId());
                                     kafkaProducer.sendBuySell(buySell);
                                 } else if(maxCoinTranDtos[i].getSearch() != null) {

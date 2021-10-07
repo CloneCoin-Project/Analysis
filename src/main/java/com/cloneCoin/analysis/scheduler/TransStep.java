@@ -27,69 +27,59 @@ public class TransStep {
     private final LeaderR2Repository leaderR2Repository;
     private final CoinR2Repository coinR2Repository;
 
-    public Mono<MaxCoinTranDto[]> transCoinInfo(MaxCoinTranDto[] maxList, Coin coin, List<TransactionDto> transactionDtos) {
-        Mono<MaxCoinTranDto[]> map1 = leaderR2Repository.findByUserId(coin.getLeaderId())
-                .map(leader -> {
-                    Double beforeLeaderKRW = leader.getTotalKRW();
-                    int count = 0;
-                    boolean isTrans = false;
-                    CoinInfoDto beforeCoinInfo = coin.toCoinDto();
-                    for (TransactionDto tran : transactionDtos) {
-                        if (tran.getSearch().equals("2")) {
-                            BigDecimal a = new BigDecimal(String.valueOf(coin.getCoinQuantity()));
-                            BigDecimal b = new BigDecimal(String.valueOf(tran.getUnits()));
-                            BigDecimal c = new BigDecimal(String.valueOf(tran.getPrice()));
-                            BigDecimal d = new BigDecimal(String.valueOf(leader.getTotalKRW()));
-                            coin.setCoinQuantity(Double.parseDouble(String.valueOf(a.subtract(b))));
-                            if (coin.getCoinQuantity().equals(0.0)) {
-                                coin.setAvgPrice(0.0);
-                            }
-                            leader.setTotalKRW(Double.parseDouble(String.valueOf(d.add(b.multiply(c)))));
-                            isTrans = true;
-                        } else if (tran.getSearch().equals("1")) {
-                            BigDecimal a = new BigDecimal(String.valueOf(coin.getCoinQuantity()));
-                            BigDecimal b = new BigDecimal(String.valueOf(tran.getUnits()));
-                            BigDecimal c = new BigDecimal(String.valueOf(tran.getPrice()));
-                            BigDecimal d = new BigDecimal(String.valueOf(coin.getAvgPrice()));
-                            BigDecimal e = new BigDecimal(String.valueOf(leader.getTotalKRW()));
+    public AtomicReferenceArray<MaxCoinTranDto> transCoinInfo(AtomicReferenceArray<MaxCoinTranDto> maxList, Coin coin, List<TransactionDto> transactionDtos) {
+        leaderR2Repository.findByUserId(coin.getLeaderId()).subscribe(leader -> {
+            Double beforeLeaderKRW = leader.getTotalKRW();
+            int count = 0;
+            boolean isTrans = false;
+            CoinInfoDto beforeCoinInfo = coin.toCoinDto();
 
-                            Double quantity = Double.parseDouble(String.valueOf(a.add(b)));
-                            Double totalAmount = Double.parseDouble(String.valueOf((d.multiply(a)).add(c.multiply(b))));
-                            leader.setTotalKRW(Double.parseDouble(String.valueOf(e.subtract(c.multiply(b)))));
-                            coin.setCoinQuantity(quantity);
-                            a = new BigDecimal(String.valueOf(quantity));
-                            b = new BigDecimal(String.valueOf(totalAmount));
-                            coin.setAvgPrice(Double.parseDouble(String.valueOf(b.divide(a, MathContext.DECIMAL32))));
-                            isTrans = true;
-                        } else {
-                            if (isTrans == true) {
-                                beforeCoinInfo = saveBS(maxList[count], coin, leader.getTotalKRW(), beforeCoinInfo, beforeLeaderKRW);
-                                beforeLeaderKRW = leader.getTotalKRW();
-                            }
-                            count++;
-                            if (tran.getSearch().equals("4") && maxList[count].getAfterCoinSet().isEmpty()) {
-                                leader.setTotalKRW(saveDe(maxList[count], leader.getTotalKRW(), tran.getPrice(), tran.getSearch()));
-                            } else if (tran.getSearch().equals("5") && maxList[count].getAfterCoinSet().isEmpty()) {
-                                leader.setTotalKRW(saveWi(maxList[count], leader.getTotalKRW(), tran.getPrice(), tran.getSearch()));
-                            }
-                            count++;
-                            isTrans = false;
-                        }
+            for (TransactionDto tran:transactionDtos) {
+                if(tran.getSearch().equals("2")){
+                    coin.setCoinQuantity(coin.getCoinQuantity() - tran.getUnits());
+                    if (coin.getCoinQuantity().equals(0.0)) {
+                        coin.setAvgPrice(0.0);
                     }
-                    if (isTrans == true) {
-                        saveBS(maxList[count], coin, leader.getTotalKRW(), beforeCoinInfo, beforeLeaderKRW);
+                    leader.setTotalKRW(leader.getTotalKRW() + (tran.getUnits() * tran.getPrice()));
+                    isTrans = true;
+                }
+                else if(tran.getSearch().equals("1")){
+                    Double quantity = coin.getCoinQuantity() + tran.getUnits();
+                    Double totalAmount = (coin.getAvgPrice() * coin.getCoinQuantity()) + (tran.getPrice() * tran.getUnits());
+                    leader.setTotalKRW(leader.getTotalKRW() - (tran.getPrice() * tran.getUnits()));
+                    coin.setCoinQuantity(quantity);
+                    coin.setAvgPrice(totalAmount / quantity);
+                    isTrans = true;
+                }
+                else {
+                    if(isTrans == true){
+                        beforeCoinInfo = saveBS(maxList, count, coin, leader.getTotalKRW(), beforeCoinInfo, beforeLeaderKRW);
+                        beforeLeaderKRW = leader.getTotalKRW();
                     }
-                    coinR2Repository.save(coin).subscribe();
-                    if (beforeLeaderKRW.compareTo(leader.getTotalKRW()) != 0) {
-                        leaderR2Repository.save(leader).subscribe();
+                    count++;
+                    if(tran.getSearch().equals("4") && maxList.get(count).getAfterCoinSet().isEmpty()) {
+                        leader.setTotalKRW(saveDe(maxList, count, leader.getTotalKRW(), tran.getPrice(), tran.getSearch()));
                     }
-                    return maxList;
-                });
-        
-        return map1;
+                    else if(tran.getSearch().equals("5") && maxList.get(count).getAfterCoinSet().isEmpty()) {
+                        leader.setTotalKRW(saveWi(maxList, count, leader.getTotalKRW(), tran.getPrice(), tran.getSearch()));
+                    }
+                    count++;
+                    isTrans = false;
+                }
+            }
+            if(isTrans == true){
+                saveBS(maxList, count, coin, leader.getTotalKRW(), beforeCoinInfo, beforeLeaderKRW);
+            }
+            coinR2Repository.save(coin).subscribe();
+            if(beforeLeaderKRW.compareTo(leader.getTotalKRW()) != 0){
+                leaderR2Repository.save(leader).subscribe();
+            }
+        });
+
+        return maxList;
     }
 
-    private Double saveWi(MaxCoinTranDto maxCoinTranDto, Double total, Double price, String search){
+    private Double saveWi(AtomicReferenceArray<MaxCoinTranDto> maxList, int i, Double total, Double price, String search){
         BigDecimal a = new BigDecimal(Double.parseDouble(String.valueOf(total)));
         BigDecimal b = new BigDecimal(Double.parseDouble(String.valueOf(price)));
         Double result = Double.parseDouble(String.valueOf(a.subtract(b)));
@@ -100,12 +90,12 @@ public class TransStep {
                 .build();
         Set<CoinInfoDto> krwSet = new HashSet<>();
         krwSet.add(krw);
-        maxCoinTranDto.setAfterCoinSet(krwSet);
-        maxCoinTranDto.setSearch(search);
+        maxList.get(i).setAfterCoinSet(krwSet);
+        maxList.get(i).setSearch(search);
         return krw.getAvgPrice();
     }
 
-    private Double saveDe(MaxCoinTranDto maxCoinTranDto, Double total, Double price, String search){
+    private Double saveDe(AtomicReferenceArray<MaxCoinTranDto> maxList, int i, Double total, Double price, String search){
         BigDecimal a = new BigDecimal(Double.parseDouble(String.valueOf(total)));
         BigDecimal b = new BigDecimal(Double.parseDouble(String.valueOf(price)));
         Double result = Double.parseDouble(String.valueOf(a.add(b)));
@@ -116,23 +106,23 @@ public class TransStep {
                 .build();
         Set<CoinInfoDto> krwSet = new HashSet<>();
         krwSet.add(krw);
-        maxCoinTranDto.setAfterCoinSet(krwSet);
-        maxCoinTranDto.setSearch(search);
+        maxList.get(i).setAfterCoinSet(krwSet);
+        maxList.get(i).setSearch(search);
         return krw.getAvgPrice();
     }
 
-    private CoinInfoDto saveBS(MaxCoinTranDto maxCoinTranDto, Coin coin, Double total, CoinInfoDto beforeCoinInfo, Double beforeLeaderKRW){
+    private CoinInfoDto saveBS(AtomicReferenceArray<MaxCoinTranDto> maxList, int i, Coin coin, Double total, CoinInfoDto beforeCoinInfo, Double beforeLeaderKRW){
         CoinInfoDto coinInfoDto = coin.toCoinDto();
-        Set<CoinInfoDto> afterCoinInfoSet = maxCoinTranDto.getAfterCoinSet();
-        Set<CoinInfoDto> beforeCoinInfoSet = maxCoinTranDto.getBeforeCoinSet();
+        Set<CoinInfoDto> afterCoinInfoSet = maxList.get(i).getAfterCoinSet();
+        Set<CoinInfoDto> beforeCoinInfoSet = maxList.get(i).getBeforeCoinSet();
         afterCoinInfoSet.add(coinInfoDto);
         beforeCoinInfoSet.add(beforeCoinInfo);
 
-        maxCoinTranDto.setAfterCoinSet(afterCoinInfoSet);
-        maxCoinTranDto.setBeforeCoinSet(beforeCoinInfoSet);
-        maxCoinTranDto.setSearch("1");
-        maxCoinTranDto.setBeforeTotalKRW(beforeLeaderKRW);
-        maxCoinTranDto.setAfterTotalKRW(total);
+        maxList.get(i).setAfterCoinSet(afterCoinInfoSet);
+        maxList.get(i).setBeforeCoinSet(beforeCoinInfoSet);
+        maxList.get(i).setSearch("1");
+        maxList.get(i).setBeforeTotalKRW(beforeLeaderKRW);
+        maxList.get(i).setAfterTotalKRW(total);
         return coinInfoDto;
     }
 
