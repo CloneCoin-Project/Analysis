@@ -42,9 +42,6 @@ public class TransStep {
                 BigDecimal c = new BigDecimal(String.valueOf(tran.getPrice()));
                 BigDecimal d = new BigDecimal(String.valueOf(leader.getTotalKRW()));
                 coin.setCoinQuantity(Double.parseDouble(String.valueOf(a.subtract(b))));
-                if (coin.getCoinQuantity().equals(0.0)) {
-                    coin.setAvgPrice(0.0);
-                }
                 leader.setTotalKRW(Double.parseDouble(String.valueOf(d.add(b.multiply(c)))));
                 String msg = leader.getUserName() + "님이 " + coin.getCoinName() + " 코인 " + tran.getUnits() + "개를 " + tran.getPrice() + "원에 판매하였습니다.";
                 String type = "SOLD";
@@ -53,6 +50,9 @@ public class TransStep {
                         .type(type)
                         .message(msg)
                         .build();
+                if (coin.getCoinQuantity().equals(0.0)) {
+                    coin.setAvgPrice(0.0);
+                }
                 kafkaProducer.sendPush(pushDto);
                 isTrans = true;
             }

@@ -27,8 +27,8 @@ public class KafkaProducer {
         LeaderDto leader = new LeaderDto();
         leader.setLeaderId(1L);
         leader.setLeaderName("시헌");
-        leader.setApiKey("25df4195dd072124e06545629a515d56");
-        leader.setSecretKey("058f77c9fb075ee1b2077e825e77291c");
+        leader.setApiKey("d6c1e3e6904559b9b98c0ee8f8f69769");
+        leader.setSecretKey("c236bbebfea28daf7dba8a1ca4f2dfb0");
         kafkaTemplate.send(TOPIC, leader);
         return leader;
     }

@@ -30,6 +30,8 @@ public class ApiScheduler {
         List<Leader> leaders = leaderRepository.findAll();
 
         for (Leader leader:leaders) {
+            Map<String, Coin> allCoinList = leader.getCoinList().stream()
+                    .collect(Collectors.toMap(Coin::getCoinName, Function.identity()));
             Map<String, Coin> beforeMap = leader.getCoinList().stream()
                     .filter(coin -> coin.getCoinQuantity()>0.0)
                     .collect(Collectors.toMap(Coin::getCoinName, Function.identity()));
@@ -62,12 +64,7 @@ public class ApiScheduler {
                             if(beforeMap.containsKey(key)){
                                 transStep.transCoinInfo(maxList, beforeMap.get(key), transactionDtos);
                             }else{
-                                Coin coinBefore = Coin.builder()
-                                        .coinName(afterMap.get(key).getCoinName())
-                                        .coinQuantity(0.0)
-                                        .leader(leader)
-                                        .avgPrice(0.0)
-                                        .build();
+                                Coin coinBefore = allCoinList.get(key);
                                 transStep.transCoinInfo(maxList, coinBefore, transactionDtos);
                             }
                         }
